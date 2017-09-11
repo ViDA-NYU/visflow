@@ -117,10 +117,10 @@ visflow.diagram.new = function() {
       dialog.find('#confirm').click(function() {
         visflow.diagram.lastDiagram = {
           id: -1,
-          name: 'myDiagram',
+          name: 'myPipeline',
           shareWith: ''
         };
-        visflow.diagram.updateURL(-1, 'myDiagram');
+        visflow.diagram.updateURL(-1, 'myPipeline');
         visflow.flow.clearFlow();
       });
     }

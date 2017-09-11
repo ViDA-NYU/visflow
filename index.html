@@ -63,8 +63,14 @@
         <a class="navbar-brand bold"><img id="logo" src="./logo.png">VisFlow</a>
       </div>
       <ul class="nav navbar-nav">
+        <li id="task" class="dropdown">
+          <a class="dropdown-toggle" data-toggle="dropdown">Task<span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a id="new"><i class="glyphicon glyphicon-pencil"></i>New</a></li>
+          </ul>
+        </li>
         <li id="diagram" class="dropdown">
-          <a class="dropdown-toggle" data-toggle="dropdown">Diagram <span class="caret"></span></a>
+          <a class="dropdown-toggle" data-toggle="dropdown">Pipeline <span class="caret"></span></a>
           <ul class="dropdown-menu">
             <li><a id="new"><i class="glyphicon glyphicon-file"></i>New<span class="hotkey">( CTRL + E )</span></a></li>
             <li><a id="save"><i class="glyphicon glyphicon-floppy-disk"></i>Save<span class="hotkey">( CTRL + S )</span></a></li>
@@ -85,6 +91,7 @@
         <li id="view" class="dropdown">
           <a class="dropdown-toggle" data-toggle="dropdown">Views <span class="caret"></span></a>
           <ul class="dropdown-menu">
+            <li><a id="show-pipeline-panel"><i class="glyphicon glyphicon-ok"></i>Pipelines</a></li>
             <li><a id="show-node-panel"><i class="glyphicon glyphicon-ok"></i>Node Panel</a></li>
             <li><a id="show-node-label"><i class="glyphicon glyphicon-ok"></i>Node Labels</a></li>
           </ul>
@@ -170,6 +177,9 @@
       <i class="glyphicon glyphicon-asterisk invisible"></i>
     </button>
     -->
+  </div>
+  <div id="pipeline-panel">
+    <div class="content"></div>
   </div>
   <div id="backdrop" class="modal-backdrop" style="display: none"></div>
   <div id="nlp"></div>

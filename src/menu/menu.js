@@ -16,6 +16,7 @@ visflow.menu.NAVBAR_SELECTOR_ = '.visflow > .navbar-fixed-top';
  */
 visflow.menu.init = function() {
   var navbar = $(visflow.menu.NAVBAR_SELECTOR_);
+  visflow.menu.initTaskDropdown_();
   visflow.menu.initDiagramDropdown_();
   visflow.edit.initDropdown(navbar);
   visflow.view.initDropdown(navbar);
@@ -24,6 +25,17 @@ visflow.menu.init = function() {
   visflow.menu.initTooltips_();
 
   visflow.menu.initUpdateHandlers_();
+};
+
+/**
+ * Initializes D3M d3m dropdown.
+ * @private
+ */
+visflow.menu.initTaskDropdown_ = function() {
+  var task = $(visflow.menu.NAVBAR_SELECTOR_).find('#d3m');
+  task.find('#new').click(function() {
+    visflow.d3m.newTask();
+  });
 };
 
 /**

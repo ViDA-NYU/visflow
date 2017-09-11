@@ -76,10 +76,7 @@ visflow.nodePanel.toggle = function(opt_state) {
     } else {
       visflow.nodePanel.hide_();
     }
-    visflow.signal(visflow.nodePanel, visflow.Event.CHANGE, {
-      type: 'nodePanel',
-      value: newState
-    });
+    visflow.signal(visflow.nodePanel, visflow.Event.CHANGE, newState);
   }
 };
 
@@ -129,9 +126,7 @@ visflow.nodePanel.hide_ = function() {
       left: -width
     }, {
       duration: visflow.nodePanel.TRANSITION_DURATION_,
-      complete: function() {
-
-      }
+      complete: function() {}
     });
 };
 

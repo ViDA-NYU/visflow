@@ -82,6 +82,7 @@ var orderedSrc = [
   'src/identity/index.js',
   'src/identity/**/*.js',
 
+  'src/d3m/d3m.js',
   'src/diagram/diagram.js',
   'src/flow/flow.js',
   'src/flow/**/*.js',
