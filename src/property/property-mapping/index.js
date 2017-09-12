@@ -12,15 +12,17 @@ visflow.PropertyMapping = function(params) {
 
   /** @inheritDoc */
   this.ports = {
-    'in': new visflow.SubsetPort({
+    'in': new visflow.Port({
       node: this,
       id: 'in',
-      isInput: true
+      isInput: true,
+      isConstants: false
     }),
-    'out': new visflow.MultiSubsetPort({
+    'out': new visflow.MultiplePort({
       node: this,
       id: 'out',
-      isInput: false
+      isInput: false,
+      isConstants: false
     })
   };
 };
@@ -55,11 +57,11 @@ visflow.PropertyMapping.prototype.showEditableScale = function(scaleDiv,
   var mappingType = visflow.property.MAPPING_TYPES[this.options.mapping];
   scaleDiv.children('*').hide();
 
-  var uiElements = [];
+  var units = [];
 
   if (mappingType == 'color') {
     var colorDiv = scaleDiv.children('#color').show();
-    uiElements.push({
+    units.push({
       constructor: visflow.ColorScaleSelect,
       params: {
         container: colorDiv,
@@ -77,7 +79,7 @@ visflow.PropertyMapping.prototype.showEditableScale = function(scaleDiv,
       {selector: '#min', index: 0},
       {selector: '#max', index: 1}
     ].forEach(function(info) {
-      uiElements.push({
+        units.push({
           constructor: visflow.Input,
           params: {
             container: numberDiv.find(info.selector),
@@ -93,22 +95,21 @@ visflow.PropertyMapping.prototype.showEditableScale = function(scaleDiv,
         });
       }, this);
   }
-
-  this.showUiElements(uiElements);
+  this.initInterface(units);
 };
 
 /** @inheritDoc */
 visflow.PropertyMapping.prototype.showDetails = function() {
   visflow.PropertyMapping.base.showDetails.call(this); // call parent settings
 
-  var uiElements = [
+  var units = [
     {
       constructor: visflow.Select,
       params: {
         container: this.content.find('#dim'),
         list: this.getDimensionList(),
         selected: this.options.dim,
-        selectTitle: this.getDataInPort().pack.data.isEmpty() ?
+        selectTitle: this.ports['in'].pack.data.isEmpty() ?
           this.NO_DATA_STRING : null
       },
       change: function(event, dim) {
@@ -131,7 +132,7 @@ visflow.PropertyMapping.prototype.showDetails = function() {
     }
   ];
 
-  this.showUiElements(uiElements);
+  this.initInterface(units);
 
   this.showEditableScale(this.content.find('#scale'), 'node');
 
@@ -139,9 +140,9 @@ visflow.PropertyMapping.prototype.showDetails = function() {
 };
 
 /** @inheritDoc */
-visflow.PropertyMapping.prototype.processSync = function() {
-  var inpack = /** @type {!visflow.Subset} */(this.getDataInPort().pack);
-  var outpack = this.getDataOutPort().pack;
+visflow.PropertyMapping.prototype.process = function() {
+  var inpack = /** @type {!visflow.Package} */(this.ports['in'].pack);
+  var outpack = this.ports['out'].pack;
   var items = inpack.items;
   var data = inpack.data;
   outpack.copy(inpack);
@@ -204,6 +205,7 @@ visflow.PropertyMapping.prototype.adjustNumbers = function() {
 /** @inheritDoc */
 visflow.PropertyMapping.prototype.parameterChanged = function(source) {
   var adjusted = this.adjustNumbers();
+  this.process();
   this.pushflow();
   // If number range is adjusted, we need to redraw both node and panel as the
   // inputs may be out-of-date.
@@ -239,6 +241,7 @@ visflow.PropertyMapping.prototype.updateSize_ = function() {
 visflow.PropertyMapping.prototype.setMapping = function(dim, property, value) {
   this.options.dim = dim;
   this.options.mapping = property;
+  console.log(dim, property, value);
   if (value instanceof Array) {
     // numerical mapping
     this.options.numberRange = value;

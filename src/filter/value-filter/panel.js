@@ -4,7 +4,7 @@
 
 /** @inheritDoc */
 visflow.ValueFilter.prototype.initPanel = function(container) {
-  this.panelElements = [
+  var units = [
     // Dimension
     {
       constructor: visflow.Select,
@@ -13,7 +13,7 @@ visflow.ValueFilter.prototype.initPanel = function(container) {
         list: this.getDimensionList(),
         selected: this.options.dim,
         listTitle: 'Filtering Dimension',
-        selectTitle: this.getDataInPort().pack.data.isEmpty() ?
+        selectTitle: this.ports['in'].pack.data.isEmpty() ?
           this.NO_DATA_STRING : null,
         allowClear: true
       },
@@ -84,4 +84,5 @@ visflow.ValueFilter.prototype.initPanel = function(container) {
       }
     }
   ];
+  this.initInterface(units);
 };

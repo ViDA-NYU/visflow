@@ -7,6 +7,7 @@
  *   dataSelected: (string|undefined),
  *   dataFile: (string|undefined),
  *   dataName: (string|undefined),
+ *   useServerData: (boolean|undefined),
  *   data: !Array<visflow.data.Info>
  * }} params
  * @constructor
@@ -23,6 +24,9 @@ visflow.save.DataSource = function(params) {
 
   /** @type {string|undefined} */
   this.dataName = params.dataName;
+
+  /** @type {boolean|undefined} */
+  this.useServerData = params.useServerData;
 
   /** @type {!Array<visflow.data.Info>} */
   this.data = params.data;

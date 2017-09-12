@@ -5,7 +5,7 @@
 /**
  * @param {!Object} params
  * @constructor
- * @extends {visflow.SubsetNode}
+ * @extends {visflow.Node}
  */
 visflow.Filter = function(params) {
   visflow.Filter.base.constructor.call(this, params);
@@ -23,7 +23,7 @@ visflow.Filter = function(params) {
   this.lastDataId = visflow.data.EMPTY_DATA_ID;
 };
 
-_.inherit(visflow.Filter, visflow.SubsetNode);
+_.inherit(visflow.Filter, visflow.Node);
 
 /** @private @const {number} */
 visflow.Filter.HEIGHT_ = 67 + visflow.const.PADDING * 2;
@@ -69,10 +69,11 @@ visflow.Filter.prototype.dataChanged = function() {
  * Handles interface changes, e.g. dimension changed, filtering values changed.
  */
 visflow.Filter.prototype.parameterChanged = function() {
+  this.pushflow();
+  this.show();
   if (visflow.optionPanel.isOpen) {
     this.updatePanel(visflow.optionPanel.contentContainer());
   }
-  this.pushflow();
 };
 
 /**

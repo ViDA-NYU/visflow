@@ -37,6 +37,10 @@
         border: 2px solid $gray-a;
       }
     }
+
+    &.constants > .background {
+      background: $gray-e2;
+    }
   }
 
   .port-icon {
@@ -48,5 +52,13 @@
     height: 15px;
     position: absolute;
     width: 15px;
+
+    &.multiple {
+      background-image: url('./imgs/port-multiple.png');
+
+      &.selection {
+        background-image: url('./imgs/port-selection.png');
+      }
+    }
   }
 }

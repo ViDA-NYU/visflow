@@ -4,7 +4,7 @@
 
 /** @inheritDoc */
 visflow.PropertyMapping.prototype.initPanel = function(container) {
-  this.panelElements = [
+  var units = [
     {
       constructor: visflow.Select,
       params: {
@@ -12,7 +12,7 @@ visflow.PropertyMapping.prototype.initPanel = function(container) {
         list: this.getDimensionList(),
         selected: this.options.dim,
         listTitle: 'Dimension',
-        selectTitle: this.getDataInPort().pack.data.isEmpty() ?
+        selectTitle: this.ports['in'].pack.data.isEmpty() ?
           this.NO_DATA_STRING : null
       },
       change: function(event, dim) {
@@ -35,5 +35,7 @@ visflow.PropertyMapping.prototype.initPanel = function(container) {
       }
     }
   ];
+  this.initInterface(units);
+
   this.showEditableScale(container.find('#scale'), 'panel');
 };

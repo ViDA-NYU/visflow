@@ -11,7 +11,7 @@ visflow.params.DataSource;
 /**
  * @param {visflow.params.DataSource} params
  * @constructor
- * @extends {visflow.SubsetNode}
+ * @extends {visflow.Node}
  */
 visflow.DataSource = function(params) {
   visflow.DataSource.base.constructor.call(this, params);
@@ -37,16 +37,17 @@ visflow.DataSource = function(params) {
 
   /** @inheritDoc */
   this.ports = {
-    out: new visflow.MultiSubsetPort({
+    out: new visflow.MultiplePort({
       node: this,
       id: 'out',
       isInput: false,
+      isConstants: false,
       fromPort: ''
     })
   };
 };
 
-_.inherit(visflow.DataSource, visflow.SubsetNode);
+_.inherit(visflow.DataSource, visflow.Node);
 
 
 /** @inheritDoc */
@@ -62,12 +63,25 @@ visflow.DataSource.prototype.deserialize = function(save) {
 
   save = /** @type {!visflow.save.DataSource} */(save);
 
+  if (save.dataSelected != null) {
+    visflow.warning('older version data storage found, auto fixed');
+    save.dataFile = save.dataSelected;
+    save.data = [
+      {
+        id: '',
+        name: 'data name',
+        file: save.dataSelected,
+        isServerData: true
+      }
+    ];
+  }
   if (save.data == null) {
     save.data = [
       {
         id: '',
         name: save.dataName,
-        file: save.dataFile
+        file: save.dataFile,
+        isServerData: save.useServerData
       }
     ];
   }
@@ -129,7 +143,7 @@ visflow.DataSource.prototype.interaction = function() {
 visflow.DataSource.prototype.deleteData = function(dataIndex) {
   this.data.splice(dataIndex, 1);
   this.rawData.splice(dataIndex, 1);
-  this.pushflow();
+  this.process();
 };
 
 /**
@@ -185,7 +199,7 @@ visflow.DataSource.prototype.updateTranspose_ = function() {
     var panelContainer = visflow.optionPanel.contentContainer();
     panelContainer.find('#transpose-section').toggle(this.options.transpose);
   }
-  this.pushflow();
+  this.process();
 };
 
 /**
@@ -215,10 +229,17 @@ visflow.DataSource.prototype.updateActiveSections_ = function(dialog) {
   var online = dialog.find('.online');
   var btnServer = dialog.find('#btn-server');
   var btnOnline = dialog.find('#btn-online');
-  server.removeClass('disabled');
-  btnServer.hide();
-  online.addClass('disabled');
-  btnOnline.show();
+  if (this.options.useServerData) {
+    server.removeClass('disabled');
+    btnServer.hide();
+    online.addClass('disabled');
+    btnOnline.show();
+  } else {
+    online.removeClass('disabled');
+    btnServer.show();
+    server.addClass('disabled');
+    btnOnline.hide();
+  }
 };
 
 /**
@@ -228,9 +249,12 @@ visflow.DataSource.prototype.loadDataDialog = function() {
   visflow.dialog.create({
     template: visflow.DataSource.SELECT_DATA_TEMPLATE,
     complete: function(dialog) {
+
       dialog.find('.to-tooltip').tooltip({
         delay: this.TOOLTIP_DELAY
       });
+
+      var select = dialog.find('select');
 
       var dataId = '';
       var dataName = '';
@@ -239,20 +263,23 @@ visflow.DataSource.prototype.loadDataDialog = function() {
 
       // Checks whether upload options have been all set.
       var uploadable = function() {
-        var allSet = dataId !== '' && dataName !== '';
+        var allSet;
+        if (this.options.useServerData) {
+          allSet = dataId !== '' && dataName !== '';
+        } else {
+          allSet = dataFile !== '' && dataName !== '';
+        }
         confirm.prop('disabled', !allSet);
       }.bind(this);
 
       confirm.click(function() {
         this.data.push({
-          id: dataId,
+          id: this.options.useServerData ? dataId : dataFile,
           name: dataName,
-          file: dataFile
+          file: dataFile,
+          isServerData: this.options.useServerData
         });
-        this.loadData({
-          index: this.data.length - 1,
-          callback: this.pushflow.bind(this)
-        });
+        this.loadData(this.data.length - 1);
       }.bind(this));
 
       visflow.data.listData(function(dataList) {
@@ -287,6 +314,16 @@ visflow.DataSource.prototype.loadDataDialog = function() {
         uploadable();
       }.bind(this));
 
+      dialog.find('#btn-server').click(function() {
+        this.options.useServerData = true;
+        this.updateActiveSections_(dialog);
+        uploadable();
+      }.bind(this));
+      dialog.find('#btn-online').click(function() {
+        this.options.useServerData = false;
+        this.updateActiveSections_(dialog);
+        uploadable();
+      }.bind(this));
       this.updateActiveSections_(dialog);
 
       dialog.find('#btn-upload').click(function(event) {
@@ -305,34 +342,26 @@ visflow.DataSource.prototype.clearData = function() {
   this.data = [];
   this.rawData = [];
   this.showDataList();
-  this.pushflow();
+  this.process();
 };
 
 /**
- * Loads the data specified into the data array.
- * This iterates the data list and sees if some data is not yet loaded. You can
- * call this method even when some data are already loaded.
- * @param {{
- *   index: (number|undefined),
- *   callback: (Function|undefined)
- * }=} opt_options
- *   index: If specified, then force data at this index to be reloaded.
- *   callback: Callback when all data are completely loaded.
+ * Loads the data specified in the data array.
+ * @param {number=} opt_index If specified, then force data at this index to be
+ *     reloaded.
  */
-visflow.DataSource.prototype.loadData = function(opt_options) {
-  var options = opt_options || {};
-
-  // Force options.index to be reloaded.
-  if (options.index != undefined) {
-    this.rawData[options.index] = null;
+visflow.DataSource.prototype.loadData = function(opt_index) {
+  if (opt_index != null) {
+    this.rawData[opt_index] = null;
   }
 
   var counter = 0;
   // Check if all data has been loaded, if so we process and propagate.
   var complete = function() {
-    if (counter == 0 && options.callback) {
-      options.callback();
+    if (counter > 0) {
+      return;
     }
+    this.process();
   }.bind(this);
   var hasAsyncLoad = false;
   this.data.forEach(function(data, dataIndex) {
@@ -341,10 +370,10 @@ visflow.DataSource.prototype.loadData = function(opt_options) {
       return;
     }
     counter++;
-    var url = visflow.url.GET_DATA + '?id=' + data.id;
+    var url = data.isServerData ?
+      visflow.url.GET_DATA + '?id=' + data.id :
+      visflow.utils.standardURL(data.file);
 
-    // Check if the dataset has already been loaded so that we can re-use the
-    // existing dataset.
     var duplicateData = visflow.data.duplicateData(data);
     if (duplicateData != null) {
       this.rawData[dataIndex] = duplicateData;
@@ -377,8 +406,8 @@ visflow.DataSource.prototype.loadData = function(opt_options) {
       }.bind(this));
   }, this);
 
-  if (!hasAsyncLoad && options.callback) {
-    options.callback();
+  if (!hasAsyncLoad) {
+    this.process();
   }
 };
 
@@ -393,7 +422,8 @@ visflow.DataSource.prototype.useEmptyData_ = function(opt_isError) {
     this.content.find('#data-error').show();
   }
   // No data. Create empty package and propagate.
-  $.extend(this.getDataOutPort().pack, new visflow.Subset());
+  $.extend(this.ports['out'].pack, new visflow.Package());
+  visflow.flow.propagate(this);
 };
 
 /**
@@ -435,28 +465,9 @@ visflow.DataSource.prototype.findTransposeAttrs = function() {
 };
 
 /**
- * Checks if all data have been loaded.
- * @return {boolean}
- * @private
+ * Processes all data sets and produces output.
  */
-visflow.DataSource.prototype.allDataLoaded_ = function() {
-  var allLoaded = true;
-  this.data.forEach(function(data, dataIndex) {
-    if (!this.rawData[dataIndex]) {
-      allLoaded = false;
-    }
-  }, this);
-  return allLoaded;
-};
-
-/**
- * Actually processes the data. This is run after making sure that all data
- * have been loaded.
- * @param {Function} endProcess
- * @private
- */
-visflow.DataSource.prototype.processData_ = function(endProcess) {
-  // Check if all data are compatible.
+visflow.DataSource.prototype.process = function() {
   var values = [];
   var mismatched = {};
   var type;
@@ -476,8 +487,6 @@ visflow.DataSource.prototype.processData_ = function(endProcess) {
   if (firstDataIndex == -1) {
     this.useEmptyData_();
     this.showDataList();
-
-    endProcess();
     return;
   }
 
@@ -504,10 +513,8 @@ visflow.DataSource.prototype.processData_ = function(endProcess) {
       this.options.transposeName
     );
     if (!result.success) {
-      visflow.error('failed to transpose data:', result.msg);
+      visflow.error('failed to cross data:', result.msg);
       this.useEmptyData_(true);
-
-      endProcess();
       return;
     }
     finalData = /** @type {visflow.TabularData} */(result.data);
@@ -527,28 +534,13 @@ visflow.DataSource.prototype.processData_ = function(endProcess) {
     file: finalFile
   });
 
-  var data = new visflow.Dataset(/** @type {visflow.TabularData} */(finalData));
-  /*
+  var data = new visflow.Data(/** @type {visflow.TabularData} */(finalData));
   if (data.type !== '') {
     visflow.data.registerData(data);
   }
-  */
   // Overwrite data object (to keep the same reference).
-  $.extend(this.getDataOutPort().pack, new visflow.Subset(data));
-
-  endProcess();
-};
-
-/** @inheritDoc */
-visflow.DataSource.prototype.processAsync = function(endProcess) {
-  if (!this.allDataLoaded_()) {
-    console.warn('load data async');
-    this.loadData({
-      callback: this.processData_.bind(this, endProcess)
-    });
-  } else {
-    this.processData_(endProcess);
-  }
+  $.extend(this.ports['out'].pack, new visflow.Package(data));
+  visflow.flow.propagate(this);
 };
 
 /**
@@ -556,12 +548,13 @@ visflow.DataSource.prototype.processAsync = function(endProcess) {
  * @inheritDoc
  */
 visflow.DataSource.prototype.getInputData = function() {
-  return [this.getDataOutPort().pack.data];
+  var port = this.ports['out'];
+  return [port.pack.data];
 };
 
 /** @inheritDoc */
 visflow.DataSource.prototype.getDimensionNames = function() {
-  return this.getDataOutPort().pack.data.dimensions;
+  return this.ports['out'].pack.data.dimensions;
 };
 
 
@@ -571,8 +564,5 @@ visflow.DataSource.prototype.getDimensionNames = function() {
  */
 visflow.DataSource.prototype.setData = function(dataInfo) {
   this.data = [dataInfo];
-  this.loadData({
-    index: 0,
-    callback: this.pushflow.bind(this)
-  });
+  this.loadData(0);
 };

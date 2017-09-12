@@ -12,27 +12,31 @@ visflow.RangeFilter = function(params) {
 
   /** @inheritDoc */
   this.ports = {
-    'inMin': new visflow.ConstantPort({
+    'inMin': new visflow.Port({
       node: this,
       id: 'inMin',
       text: 'range min',
-      isInput: true
+      isInput: true,
+      isConstants: true
     }),
-    'inMax': new visflow.ConstantPort({
+    'inMax': new visflow.Port({
       node: this,
       id: 'inMax',
       text: 'range max',
-      isInput: true
+      isInput: true,
+      isConstants: true
     }),
-    'in': new visflow.SubsetPort({
+    'in': new visflow.Port({
       node: this,
       id: 'in',
-      isInput: true
+      isInput: true,
+      isConstants: false
     }),
-    'out': new visflow.MultiSubsetPort({
+    'out': new visflow.MultiplePort({
       node: this,
       id: 'out',
-      isInput: false
+      isInput: false,
+      isConstants: false
     })
   };
 
@@ -57,7 +61,7 @@ visflow.RangeFilter.prototype.deserialize = function(save) {
 visflow.RangeFilter.prototype.showDetails = function() {
   visflow.RangeFilter.base.showDetails.call(this);
 
-  var uiElements = [
+  var units = [
     // Dimensions
     {
       constructor: visflow.Select,
@@ -65,7 +69,7 @@ visflow.RangeFilter.prototype.showDetails = function() {
         container: this.content.find('#dim'),
         list: this.getDimensionList(),
         selected: this.options.dim,
-        selectTitle: this.getDataInPort().pack.data.isEmpty() ?
+        selectTitle: this.ports['in'].pack.data.isEmpty() ?
           this.NO_DATA_STRING : null,
         allowClear: true
       },
@@ -80,7 +84,7 @@ visflow.RangeFilter.prototype.showDetails = function() {
       params: {
         container: this.content.find('#min'),
         value: this.formatRange(this.range[0]),
-        disabled: this.getPort('inMin').connected()
+        disabled: this.ports['inMin'].connected()
       },
       change: function(event, value) {
         this.options.typeInValue[0] = '' + value;
@@ -93,7 +97,7 @@ visflow.RangeFilter.prototype.showDetails = function() {
       params: {
         container: this.container.find('#max'),
         value: this.formatRange(this.range[1]),
-        disabled: this.getPort('inMax').connected()
+        disabled: this.ports['inMax'].connected()
       },
       change: function(event, value) {
         this.options.typeInValue[1] = '' + value;
@@ -101,18 +105,17 @@ visflow.RangeFilter.prototype.showDetails = function() {
       }
     }
   ];
-
-  this.showUiElements(uiElements);
+  this.initInterface(units);
 };
 
 /** @inheritDoc */
-visflow.RangeFilter.prototype.processSync = function() {
+visflow.RangeFilter.prototype.process = function() {
   var packs = [];
   [
     {portId: 'inMin', index: 0},
     {portId: 'inMax', index: 1}
   ].forEach(function(info) {
-    var port = this.getPort(info.portId);
+    var port = this.ports[info.portId];
     var index = info.index;
     var pack;
     if (port.connected()) {
@@ -139,8 +142,8 @@ visflow.RangeFilter.prototype.processSync = function() {
     visflow.warning('minValue > maxValue in', this.label);
   }
 
-  var inpack = /** @type {!visflow.Subset} */(this.getDataInPort().pack);
-  var outpack = this.getDataOutPort().pack;
+  var inpack = /** @type {!visflow.Package} */(this.ports['in'].pack);
+  var outpack = this.ports['out'].pack;
   if (inpack.isEmpty()) {
     outpack.copy(inpack);
     return;
@@ -181,7 +184,7 @@ visflow.RangeFilter.prototype.formatRange = function(value) {
 /**
  * Range filters the subset with a given specification.
  * @param {visflow.RangeFilter.Spec} spec
- * @param {!visflow.Subset} pack
+ * @param {!visflow.Package} pack
  * @return {!Array<number>} Resulting subset as array.
  */
 visflow.RangeFilter.filter = function(spec, pack) {
@@ -205,14 +208,14 @@ visflow.RangeFilter.filter = function(spec, pack) {
 /** @inheritDoc */
 visflow.RangeFilter.prototype.filter = function() {
   // Slow implementation: Linear scan
-  var inpack = /** @type {!visflow.Subset} */(this.getDataInPort().pack);
+  var inpack = /** @type {!visflow.Package} */(this.ports['in'].pack);
 
   var result = visflow.RangeFilter.filter({
     dim: this.options.dim,
     range: this.range
   }, inpack);
 
-  var outpack = this.getDataOutPort().pack;
+  var outpack = this.ports['out'].pack;
   outpack.copy(inpack);
   outpack.filter(result);
 };
