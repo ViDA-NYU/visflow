@@ -8,12 +8,14 @@
  *   id: string,
  *   text: (string|undefined),
  *   isInput: (boolean|undefined),
+ *   isConstants: (boolean|undefined),
  *   fromPort: (string|undefined)
  * }} params
  *     node: Node the port belongs to.
- *     id: Id of the port w.r.t. the node.
+ *     id: Id of the port w.r.t the node.
  *     text: Text to be displayed for the port as tooltip.
  *     isInput: Whether the port is input port.
+ *     isConstants: Whether the port accepts constants.
  *     fromPort: Port id from which this port gets the data from.
  */
 visflow.params.Port;
@@ -21,7 +23,6 @@ visflow.params.Port;
 /**
  * Port constructor.
  * @param {visflow.params.Port} params
- * @abstract
  * @constructor
  */
 visflow.Port = function(params) {
@@ -39,12 +40,14 @@ visflow.Port = function(params) {
 
   /**
    * Descriptive text used as tooltip.
-   * @protected {string}
+   * @private {string}
    */
-  this.text = params.text !== undefined ? params.text : '';
+  this.text_ = params.text !== undefined ? params.text : '';
 
   /** @type {boolean} */
   this.isInput = !!params.isInput;
+   /** @type {boolean} */
+  this.isConstants = !!params.isConstants;
 
   /** @type {string} */
   this.fromPort = params.fromPort !== undefined ? params.fromPort : 'in';
@@ -55,17 +58,21 @@ visflow.Port = function(params) {
    */
   this.connections = [];
 
-  /** @type {!jQuery} */
-  this.container = $();
-
-  /** @private {boolean} */
-  this.changed_ = false;
+  /**
+   * Class constructor for the package.
+   * @type {Function}
+   */
+  this.packClass = this.isConstants ? visflow.Constants : visflow.Package;
 
   /**
-   * Package the port currently possesses (subset, constants, generic).
-   * @type {!visflow.Package}
+   * Package the port currently possesses.
+   * This stores either data items or constants.
+   * @type {visflow.Constants|visflow.Package}
    */
-  this.pack = new visflow.Package();
+  this.pack = new this.packClass();
+
+  /** @type {!jQuery} */
+  this.container = $();
 };
 
 /** @protected @const {number} */
@@ -79,14 +86,17 @@ visflow.Port.prototype.INFO_LENGTH = 100;
  */
 visflow.Port.prototype.contextMenuItems = function() {
   return [
-    // TODO(bowen): For now there is nothing to do with the generic port port.
+    {id: 'disconnect', text: 'Disconnect',
+      icon: 'glyphicon glyphicon-minus-sign'},
+    {id: 'export', text: 'Export Data',
+      icon: 'glyphicon glyphicon-open'},
+    {id: 'flowSense', text: 'FlowSense',
+      icon: 'glyphicon glyphicon-comment'}
   ];
 };
 
 /**
  * Checks if more connections can be made on this port.
- * By default each port can only be connected to one other port, so we just
- * negate the length of the connections.
  * @return {boolean}
  */
 visflow.Port.prototype.hasMoreConnections = function() {
@@ -125,6 +135,11 @@ visflow.Port.prototype.connectable = function(port) {
       reason: 'single port has already been connected'
     });
   }
+  if (this.isConstants !== port.isConstants) {
+    return _.extend(result, {
+      reason: 'cannot connect constant port with data port'
+    });
+  }
   for (var i = 0; i < this.connections.length; i++) {
     var edge = this.connections[i];
     if (this.isInput && edge.sourcePort === port ||
@@ -152,19 +167,20 @@ visflow.Port.prototype.connectable = function(port) {
  */
 visflow.Port.prototype.connect = function(edge) {
   this.connections.push(edge);
-  this.onConnected(edge);
+  if (this.isInput) {
+    // Make data reference.
+    this.pack = edge.sourcePort.pack;
+  }
+  edge.sourcePort.pack.changed = true;
 
+  // Propagation does not include processing the node being propagated.
   // Update is required on the downflow node so that it becomes aware of the
   // upflow changes.
+  if (!visflow.flow.deserializing) {
+    edge.targetNode.update();
+  }
   visflow.flow.propagate(edge.targetNode);
 };
-
-/**
- * Provides handler for the event of port being connected.
- * @param {!visflow.Edge} edge
- * @protected
- */
-visflow.Port.prototype.onConnected = function(edge) {};
 
 /**
  * Disconnects an edge from the port.
@@ -177,15 +193,10 @@ visflow.Port.prototype.disconnect = function(edge) {
       break;
     }
   }
-  this.onDisconnected(edge);
+  if (this.isInput && this.connections.length == 0) {
+    this.pack = new this.packClass();
+  }
 };
-
-/**
- * Provides handler for the event of port being disconnected.
- * @param {!visflow.Edge} edge
- * @protected
- */
-visflow.Port.prototype.onDisconnected = function(edge) {};
 
 /**
  * Sets the jQuery container of the port.
@@ -204,6 +215,10 @@ visflow.Port.prototype.setContainer = function(container) {
       delay: this.TOOLTIP_DELAY
     });
 
+  if (this.isConstants) {
+    this.container.addClass('constants');
+  }
+
   $('<div></div>')
     .addClass('port-icon')
     .appendTo(this.container);
@@ -212,15 +227,15 @@ visflow.Port.prototype.setContainer = function(container) {
     .addClass('background')
     .appendTo(this.container);
 
-  this.initContextMenu();
-  this.interaction();
+  this.initContextMenu_();
+  this.interaction_();
 };
 
 /**
  * Prepares the contextMenu for the port.
- * @return {!visflow.ContextMenu}
+ * @private
  */
-visflow.Port.prototype.initContextMenu = function() {
+visflow.Port.prototype.initContextMenu_ = function() {
   var contextMenu = new visflow.ContextMenu({
     container: this.container,
     items: this.contextMenuItems()
@@ -232,11 +247,17 @@ visflow.Port.prototype.initContextMenu = function() {
         visflow.flow.deleteEdge(connection);
       });
     }.bind(this))
+    .on('vf.export', function() {
+      visflow.upload.export(/** @type {!visflow.Package} */(this.pack));
+    }.bind(this))
+    .on('vf.beforeOpen', function(event, menuContainer) {
+      if (this.isConstants) {
+        menuContainer.find('#export').hide();
+      }
+    }.bind(this))
     .on('vf.flowSense', function() {
       visflow.nlp.input(this.node);
     }.bind(this));
-
-  return contextMenu;
 };
 
 /**
@@ -244,14 +265,31 @@ visflow.Port.prototype.initContextMenu = function() {
  * @return {string}
  */
 visflow.Port.prototype.info = function() {
-  return '';
+  var text = this.text_ ? this.text_ + ': ' : '';
+  var count = 0;
+  if (this.isConstants) {
+    var constants = this.pack.stringify();
+    text += constants;
+    count = this.pack.count();
+  } else if (this.isInput) {
+    count = this.pack.count();
+  } else {
+    count = this.pack.count();
+    if (this.fromPort !== '') {
+      count += '/' + this.node.getPort(this.fromPort).pack.count();
+    }
+  }
+  if (text.length > this.INFO_LENGTH) {
+    text = text.substr(0, this.INFO_LENGTH - 3) + '...';
+  }
+  return text + ' (' + count + ' items)';
 };
 
 /**
  * Prepares the interaction of the port.
- * @protected
+ * @private
  */
-visflow.Port.prototype.interaction = function() {
+visflow.Port.prototype.interaction_ = function() {
   this.container
     .dblclick(function() {
       this.info();
@@ -306,6 +344,13 @@ visflow.Port.prototype.interaction = function() {
     });
 };
 
+/**
+ * Checks whether the port's data/value has changed.
+ * @return {boolean}
+ */
+visflow.Port.prototype.changed = function() {
+  return this.pack.changed;
+};
 
 /**
  * Gets the center coordinates of the port.
@@ -317,51 +362,4 @@ visflow.Port.prototype.getCenter = function() {
     left: offset.left + this.container.width() / 2,
     top: offset.top + this.container.height() / 2
   };
-};
-
-/**
- * Sets/gets the changed state of the port.
- * @param {boolean=} opt_value
- * @return {boolean}
- */
-visflow.Port.prototype.changed = function(opt_value) {
-  if (opt_value != undefined) {
-    return this.changed_ = opt_value;
-  }
-  for (var i = 0; i < this.connections.length; i++) {
-    var edge = this.connections[i];
-    var port = this.isInput ? edge.sourcePort : edge.targetPort;
-    if (port.getChanged()) {
-      return this.changed_ = true;
-    }
-  }
-  return this.changed_ = false;
-};
-
-/**
- * Gets the changed_ flag. This method does not derive changed_ state from
- * connected neighbors.
- * @return {boolean}
- */
-visflow.Port.prototype.getChanged = function() {
-  return this.changed_;
-};
-
-/**
- * Checks if the port data is empty. To be implemented in inheriting classes.
- * Always returns false here.
- * @return {boolean}
- */
-visflow.Port.prototype.isEmpty = function() {
-  return false;
-};
-
-/**
- * Gets the subset from the port. If the port does not produce a subset,
- * the method should panic (constant or generic).
- * @return {!visflow.Subset}
- */
-visflow.Port.prototype.getSubset = function() {
-  visflow.error('cannot serialize port data to subset');
-  return new visflow.Subset();
 };

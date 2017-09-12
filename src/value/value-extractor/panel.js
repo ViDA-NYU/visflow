@@ -5,7 +5,7 @@
 /** @inheritDoc */
 visflow.ValueExtractor.prototype.initPanel = function(container) {
   visflow.ValueExtractor.base.initPanel.call(this, container);
-  this.panelElements = [
+  var units = [
     {
       constructor: visflow.MultipleSelect,
       params: {
@@ -13,7 +13,7 @@ visflow.ValueExtractor.prototype.initPanel = function(container) {
         list: this.getDimensionList(),
         listTitle: 'Dimension(s)',
         selected: this.options.dims,
-        selectTitle: this.getDataInPort().pack.data.isEmpty() ?
+        selectTitle: this.ports['in'].pack.data.isEmpty() ?
           this.NO_DATA_STRING : null
       },
       change: function(event, dims) {
@@ -25,4 +25,5 @@ visflow.ValueExtractor.prototype.initPanel = function(container) {
       }
     }
   ];
+  this.initInterface(units);
 };

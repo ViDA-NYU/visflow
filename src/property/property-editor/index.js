@@ -12,15 +12,17 @@ visflow.PropertyEditor = function(params) {
 
   /** @inheritDoc */
   this.ports = {
-    'in': new visflow.SubsetPort({
+    'in': new visflow.Port({
       node: this,
       id: 'in',
-      isInput: true
+      isInput: true,
+      isConstants: false
     }),
-    'out': new visflow.MultiSubsetPort({
+    'out': new visflow.MultiplePort({
       node: this,
       id: 'out',
-      isInput: false
+      isInput: false,
+      isConstants: false
     })
   };
 };
@@ -37,13 +39,13 @@ visflow.PropertyEditor.prototype.serialize = function() {
 visflow.PropertyEditor.prototype.showDetails = function() {
   visflow.PropertyEditor.base.showDetails.call(this); // call parent settings
 
-  var panelElements = [];
+  var units = [];
 
   [
     {selector: '#color', property: 'color'},
     {selector: '#border', property: 'border'}
   ].forEach(function(info) {
-    panelElements.push({
+    units.push({
       constructor: visflow.ColorPicker,
       params: {
         container: this.content.find(info.selector),
@@ -61,7 +63,7 @@ visflow.PropertyEditor.prototype.showDetails = function() {
     {selector: '#size', property: 'size'},
     {selector: '#opacity', property: 'opacity'}
   ].forEach(function(info) {
-    panelElements.push({
+    units.push({
       constructor: visflow.Input,
       params: {
         container: this.content.find(info.selector),
@@ -76,14 +78,13 @@ visflow.PropertyEditor.prototype.showDetails = function() {
       }
     });
   }, this);
-
-  this.showUiElements(panelElements);
+  this.initInterface(units);
 };
 
 /** @inheritDoc */
-visflow.PropertyEditor.prototype.processSync = function() {
-  var inpack = /** @type {!visflow.Subset} */(this.getDataInPort().pack);
-  var outpack = this.getDataOutPort().pack;
+visflow.PropertyEditor.prototype.process = function() {
+  var inpack = /** @type {!visflow.Package} */(this.ports['in'].pack);
+  var outpack = this.ports['out'].pack;
   outpack.copy(inpack);
   var newItems = {};
   var setProps = {};
@@ -130,6 +131,7 @@ visflow.PropertyEditor.prototype.adjustNumbers = function() {
 /** @inheritDoc */
 visflow.PropertyEditor.prototype.parameterChanged = function(source) {
   var adjusted = this.adjustNumbers();
+  this.process();
   this.pushflow();
   // If number range is adjusted, we need to redraw both node and panel as the
   // inputs may be out-of-date.

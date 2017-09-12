@@ -83,7 +83,7 @@ visflow.ParallelCoordinates.prototype.selectItemsIntersectLasso_ = function() {
     this.selected = {};
   }
 
-  var inpack = this.getDataInPort().pack,
+  var inpack = this.ports['in'].pack,
     items = inpack.items,
     values = inpack.data.values;
 
@@ -136,7 +136,7 @@ visflow.ParallelCoordinates.prototype.showDetails = function() {
  * @private
  */
 visflow.ParallelCoordinates.prototype.getItemProperties_ = function() {
-  var inpack = this.getDataInPort().pack;
+  var inpack = this.ports['in'].pack;
   var items = inpack.items;
   var data = inpack.data;
   var values = data.values;
@@ -327,7 +327,7 @@ visflow.ParallelCoordinates.prototype.drawAxis_ = function(dimIndex,
         .classed('vis-label', true)
         .attr('transform', labelTransform);
     }
-    var data = this.getDataInPort().pack.data;
+    var data = this.ports['in'].pack.data;
     var updatedLabel = this.allowTransition ? label.transition() : label;
     updatedLabel
       .style('opacity', 1)
@@ -337,6 +337,10 @@ visflow.ParallelCoordinates.prototype.drawAxis_ = function(dimIndex,
     _.fadeOut(g.select('.vis-label'));
   }
 };
+
+/**
+ * Computes the bottom margin based
+ */
 
 /** @inheritDoc */
 visflow.ParallelCoordinates.prototype.prepareScales = function() {
@@ -349,7 +353,7 @@ visflow.ParallelCoordinates.prototype.prepareScales = function() {
     this.plotMargins().top
   ];
 
-  var inpack = this.getDataInPort().pack;
+  var inpack = this.ports['in'].pack;
   var data = inpack.data;
   var items = inpack.items;
 
@@ -375,7 +379,7 @@ visflow.ParallelCoordinates.prototype.prepareScales = function() {
  * @return {!Array<number>}
  */
 visflow.ParallelCoordinates.prototype.findPlotDimensions = function() {
-  var data = this.getDataInPort().pack.data;
+  var data = this.ports['in'].pack.data;
   var dims = [];
   data.dimensionTypes.forEach(function(type, index) {
     if (type == visflow.ValueType.STRING) {

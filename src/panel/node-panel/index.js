@@ -38,6 +38,16 @@ visflow.nodePanel.init = function() {
   visflow.nodePanel.container_ = container;
   visflow.nodePanel.hoverArea_ = container.children('.hover-area');
 
+  /*
+  var showPanel = function() {
+    if (!visflow.nodePanel.isOpen) {
+      visflow.nodePanel.toggle(true);
+    }
+  };
+  container.find('#btn-toggle').mouseenter(showPanel);
+  visflow.nodePanel.hoverArea_.mouseenter(showPanel);
+  */
+
   visflow.nodePanel.initUpdateHandlers_();
   // Set correct panel width on system init
   visflow.nodePanel.show_();
@@ -49,7 +59,7 @@ visflow.nodePanel.init = function() {
  * @private
  */
 visflow.nodePanel.initUpdateHandlers_ = function() {
-  visflow.listen(visflow.flow, visflow.Event.VISMODE, function() {
+  $(visflow.flow).on('vf.visMode', function() {
     visflow.nodePanel.updateVisMode_();
   });
 };
@@ -76,7 +86,7 @@ visflow.nodePanel.toggle = function(opt_state) {
     } else {
       visflow.nodePanel.hide_();
     }
-    visflow.signal(visflow.nodePanel, visflow.Event.CHANGE, {
+    visflow.signal(visflow.nodePanel, 'change', {
       type: 'nodePanel',
       value: newState
     });
@@ -161,7 +171,7 @@ visflow.nodePanel.initButton_ = function(button) {
     var node = visflow.flow.createNode(/** @type {string} */(
       button.attr('id')));
 
-    visflow.listen(node, visflow.Event.READY, function() {
+    $(node).on('vf.ready', function() {
       var container = node.getContainer();
       container.css(_.extend({
         left: visflow.interaction.mouseX - container.width() / 2,

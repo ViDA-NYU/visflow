@@ -7,7 +7,7 @@ visflow.ParallelCoordinates.prototype.initPanel = function(container) {
   visflow.ParallelCoordinates.base.initPanel.call(this, container);
   var dimensionList = this.getDimensionList();
 
-  this.panelElements = [
+  var units = [
     {
       constructor: visflow.EditableList,
       params: {
@@ -47,4 +47,5 @@ visflow.ParallelCoordinates.prototype.initPanel = function(container) {
       }
     }
   ];
+  this.initInterface(units);
 };

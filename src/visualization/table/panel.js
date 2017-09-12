@@ -7,7 +7,7 @@ visflow.Table.prototype.initPanel = function(container) {
   visflow.Table.base.initPanel.call(this, container);
   var dimensionList = this.getDimensionList();
 
-  this.panelElements = [
+  var units = [
     {
       constructor: visflow.EditableList,
       params: {
@@ -35,4 +35,5 @@ visflow.Table.prototype.initPanel = function(container) {
       }
     }
   ];
+  this.initInterface(units);
 };

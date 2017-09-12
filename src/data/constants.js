@@ -8,8 +8,6 @@
  * @constructor
  */
 visflow.Constants = function(opt_text) {
-  visflow.Constants.base.constructor.call(this, opt_text);
-
   /**
    * Type of the constant.
    * Can be one of {empty, int, float, string}.
@@ -29,6 +27,12 @@ visflow.Constants = function(opt_text) {
    */
   this.hasElement = {};
 
+  /**
+   * Change status. If true then we need propagation.
+   * @type {boolean}
+   */
+  this.changed = true;
+
   if (opt_text != null) {
     if (typeof opt_text !== 'string') {
       visflow.error('non-string input');
@@ -37,13 +41,11 @@ visflow.Constants = function(opt_text) {
 
     var elements = opt_text.split(/[,;]+/);
     elements.forEach(function(element) {
-      element = element.replace(/\s./g, '');
+      element = element.replace(/\s+/g, '');
       this.add(element);
     }, this);
   }
 };
-
-_.inherit(visflow.Constants, visflow.Package);
 
 /**
   * Flag used to make constants be differentiable from data.

@@ -20,7 +20,7 @@ visflow.options.toggleNodeLabel = function(opt_state) {
   if (newState != visflow.options.nodeLabel) {
     visflow.options.nodeLabel = newState;
 
-    visflow.signal(visflow.options, visflow.Event.CHANGE, {
+    visflow.signal(visflow.options, 'change', {
       type: 'nodeLabel',
       value: newState
     });

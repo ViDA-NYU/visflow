@@ -79,7 +79,7 @@ visflow.nlp.createNodes = function(nodeInfo, opt_callback, opt_adjustLayout) {
       _.extend(movable, newMovable);
     });
 
-    visflow.listen(node, visflow.Event.READY, function() {
+    $(node).on('vf.ready', function() {
       node.moveTo(info.x, info.y);
       if (--readyCounter == 0 && opt_callback) {
         opt_callback(nodes);

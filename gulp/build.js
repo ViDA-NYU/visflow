@@ -20,15 +20,6 @@ gulp.task('build-dev', function(cb) {
     cb);
 });
 
-// Build dev in concatenation mode.
-gulp.task('build-dev-express', function(cb) {
-  runSequence(
-    'dist',
-    'compile-concat',
-    ['copy', 'css-dev'],
-    cb);
-});
-
 // Build doc.
 gulp.task('build-doc', function(cb) {
   runSequence(

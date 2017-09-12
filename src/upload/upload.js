@@ -39,7 +39,7 @@ visflow.upload.upload = function() {
 
 /**
  * Creates an upload dialog for the exported data.
- * @param {!visflow.Subset} pack
+ * @param {!visflow.Package} pack
  */
 visflow.upload.export = function(pack) {
   if (!visflow.user.writePermission()) {
@@ -279,7 +279,7 @@ visflow.upload.uploadDialog_ = function(dialog, params) {
  * @param {!jQuery} dialog
  * @param {{
  *   dataList: !Array<visflow.data.ListInfo>,
- *   pack: !visflow.Subset
+ *   pack: !visflow.Package
  * }} params
  * @private
  */

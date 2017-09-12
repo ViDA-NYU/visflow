@@ -6,26 +6,28 @@
  * @param {!Object} params
  * @constructor
  * @abstract
- * @extends {visflow.SubsetNode}
+ * @extends {visflow.Node}
  */
 visflow.Visualization = function(params) {
   visflow.Visualization.base.constructor.call(this, params);
 
   /** @inheritDoc */
   this.ports = {
-    'in': new visflow.SubsetPort({
+    'in': new visflow.Port({
       node: this,
       id: 'in',
-      isInput: true
+      isInput: true,
+      isConstants: false
     }),
     'outs': new visflow.SelectionPort({
       node: this,
       id: 'outs'
     }),
-    'out': new visflow.MultiSubsetPort({
+    'out': new visflow.MultiplePort({
       node: this,
       id: 'out',
-      isInput: false
+      isInput: false,
+      isConstants: false
     })
   };
 
@@ -75,18 +77,13 @@ visflow.Visualization = function(params) {
   this.options.extend(this.visualizationOptions());
 };
 
-_.inherit(visflow.Visualization, visflow.SubsetNode);
+_.inherit(visflow.Visualization, visflow.Node);
 
 
 /** @inheritDoc */
 visflow.Visualization.prototype.init = function() {
   visflow.Visualization.base.init.call(this);
-
-  // We need to add visualization class to the container manually because it is
-  // a middle class, of which the NODE_CLASS would be overwritten by inheritting
-  // class.
   this.container.addClass('visualization');
-
   this.svg = d3.select(this.content.children('svg')[0]);
   this.updateSVGSize();
 };
@@ -132,7 +129,7 @@ visflow.Visualization.prototype.deserialize = function(save) {
  * @return {boolean}
  */
 visflow.Visualization.prototype.isDataEmpty = function() {
-  return this.getDataInPort().isEmpty();
+  return this.ports['in'].pack.isEmpty();
 };
 
 /**
@@ -142,11 +139,11 @@ visflow.Visualization.prototype.isDataEmpty = function() {
 visflow.Visualization.prototype.checkDataEmpty = function() {
   if (this.isDataEmpty()) {
     // otherwise scales may be undefined
-    this.showMessage(visflow.Node.Message.EMPTY_DATA);
+    this.showMessage('empty data');
     this.content.hide();
     return true;
   } else {
-    this.hideMessage(visflow.Node.Message.EMPTY_DATA);
+    this.hideMessage();
     this.content.show();
     return false;
   }
@@ -167,10 +164,10 @@ visflow.Visualization.prototype.showDetails = function() {
 };
 
 /** @inheritDoc */
-visflow.Visualization.prototype.processSync = function() {
-  var inpack = this.getDataInPort().getSubset();
-  var outpack = this.getDataOutPort().getSubset();
-  var outspack = this.ports['outs'].getSubset();
+visflow.Visualization.prototype.process = function() {
+  var inpack = /** @type {!visflow.Package} */(this.ports['in'].pack);
+  var outpack = this.ports['out'].pack;
+  var outspack = this.ports['outs'].pack;
 
   // always pass data through
   outpack.copy(inpack, true);
@@ -212,8 +209,8 @@ visflow.Visualization.prototype.processSync = function() {
  * Processes the current user selection.
  */
 visflow.Visualization.prototype.processSelection = function() {
-  var inpack = this.getDataInPort().getSubset();
-  var outspack = this.ports['outs'].getSubset();
+  var inpack = /** @type {!visflow.Package} */(this.ports['in'].pack);
+  var outspack = this.ports['outs'].pack;
   outspack.copy(inpack);
   outspack.filter(_.allKeys(this.selected));
 };
@@ -223,7 +220,7 @@ visflow.Visualization.prototype.processSelection = function() {
  * exist. This may be result of upflow input change.
  */
 visflow.Visualization.prototype.validateSelection = function() {
-  var inpack = this.getDataInPort().pack;
+  var inpack = this.ports['in'].pack;
   for (var itemIndex in this.selected) {
     var index = +itemIndex;
     if (inpack.items[index] == null) {
@@ -395,22 +392,23 @@ visflow.Visualization.prototype.clearBrush = function() {
 };
 
 /**
- * Selects user chosen items from the data. Inheriting classes implement this
+ * Selects within data the user chosen items. Inheriting classes implement this
  * based on different selection mechanism, e.g. scatterplot uses range box while
  * parallelCoordinates uses lasso stroke.
  */
 visflow.Visualization.prototype.selectItems = function() {
+  this.show();
   this.pushflow();
 };
 
 /**
  * Selects the given items.
  * @param {!Object<number, boolean>} items
- * @private
  */
-visflow.Visualization.prototype.select_ = function(items) {
+visflow.Visualization.prototype.select = function(items) {
   this.selected = items;
   this.selectedChanged();
+  this.show();
   this.pushflow();
 };
 
@@ -476,15 +474,21 @@ visflow.Visualization.prototype.getSelectBox = function(opt_ignoreEmpty) {
  * Selects all data items.
  */
 visflow.Visualization.prototype.selectAll = function() {
-  var items = this.getDataInPort().getSubset().items;
-  this.select_(_.keySet(items));
+  var items = this.ports['in'].pack.items;
+  this.selected = _.keySet(items);
+  this.selectedChanged();
+  this.show();
+  this.pushflow();
 };
 
 /**
  * Clears all item selection
  */
 visflow.Visualization.prototype.clearSelection = function() {
-  this.select_({});
+  this.selected = {};
+  this.selectedChanged();
+  this.show();
+  this.pushflow();
 };
 
 /**
@@ -549,7 +553,7 @@ visflow.Visualization.prototype.drawAxis = function(params) {
 
 /** @inheritDoc */
 visflow.Visualization.prototype.updateContent = function() {
-  if (!this.options.minimized && !this.isDataEmpty()) {
+  if (!this.options.minimized) {
     this.updateSVGSize();
     this.prepareScales();
   }
@@ -634,13 +638,7 @@ visflow.Visualization.prototype.dimensionChanged = function() {
 /**
  * Handles selection changes from shortcuts (selectAll and clearSelection).
  */
-visflow.Visualization.prototype.selectedChanged = function() {
-  this.allPorts().forEach(function(port) {
-    if (port.IS_SELECTION_PORT) {
-      port.changed(true);
-    }
-  });
-};
+visflow.Visualization.prototype.selectedChanged = function() {};
 
 /**
  * Sets the dimensions to be visualized.
@@ -656,8 +654,8 @@ visflow.Visualization.prototype.setDimensions = function(dims) {
 
 /**
  * Gets the data selection output port.
- * @return {!visflow.SubsetPort}
+ * @return {!visflow.Port}
  */
 visflow.Visualization.prototype.getSelectionOutPort = function() {
-  return /** @type {!visflow.SubsetPort} */(this.getPort('outs'));
+  return this.getPort('outs');
 };
