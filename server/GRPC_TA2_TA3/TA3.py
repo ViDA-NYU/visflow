@@ -1,3 +1,4 @@
+from concurrent import futures
 import grpc
 from ta3ta2_api import core_pb2, core_pb2_grpc, dataflow_ext_pb2, dataflow_ext_pb2_grpc, data_ext_pb2, data_ext_pb2_grpc
 from protobuf_to_dict import protobuf_to_dict, dict_to_protobuf # this library to converts python grpc messages to dict
@@ -217,6 +218,10 @@ grpcCall = {
 
 
 class SocketHandler(websocket.WebSocketHandler):
+    def __init__(self, *args, **kwargs):
+        websocket.WebSocketHandler.__init__(*args, **kwargs)
+        self._thread_pool = futures.ThreadPoolExecutor(max_workers=10)
+
     def check_origin(self, origin):
         return True
 
@@ -229,20 +234,25 @@ class SocketHandler(websocket.WebSocketHandler):
     def on_message(self, message):
         message = json.loads(message)
 
-        gc = grpcCall[message['fname']]
+        # Do call on different thread
+        self._thread_pool.submit(self._do_request, message)
 
-        if gc['inputType'] == MESSAGE_TYPE['BLOCKING']:
-            grpc_input = dict_to_protobuf(gc['input'], message['object'])
-            if gc['outputType'] == MESSAGE_TYPE['BLOCKING']:
-                response = gc['function'](grpc_input)
+    def _do_request(self, message):
+        call = grpcCall[message['fname']]
+
+        if call['inputType'] == MESSAGE_TYPE['BLOCKING']:
+            grpc_input = dict_to_protobuf(call['input'], message['object'])
+            if call['outputType'] == MESSAGE_TYPE['BLOCKING']:
+                response = call['function'](grpc_input)
                 ret = {'rid':message['rid'], 'object': protobuf_to_dict(response)}
                 self.write_message(json.dumps(ret))
-            else: #gc['outputType'] == MESSAGE_TYPE['STREAMING']
-                for response in gc['function'](grpc_input):
+            else: #call['outputType'] == MESSAGE_TYPE['STREAMING']
+                for response in call['function'](grpc_input):
                     ret = {'rid':message['rid'], 'object': protobuf_to_dict(response)}
                     self.write_message(json.dumps(ret))
-        else: # gc['inputType'] == MESSAGE_TYPE['STREAMING']):
+        else: # call['inputType'] == MESSAGE_TYPE['STREAMING']):
             raise NotImplementedError('Streaming input not supported')
+        self.finish()
 
 app = web.Application([
     (r'/ws', SocketHandler)
@@ -253,4 +263,3 @@ app = web.Application([
 if __name__ == '__main__':
     app.listen(8888)
     ioloop.IOLoop.instance().start()
-
