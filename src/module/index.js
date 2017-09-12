@@ -1,5 +1,5 @@
 /**
- * @fileoverview An identity computation node that simply copies its input data
+ * @fileoverview An module computation node that simply copies its input data
  * to its output. This is to test the system's capability of treating each
  * computation node's output as unique data types.
  */
@@ -10,8 +10,8 @@
  * @abstract
  * @extends {visflow.ComputationNode}
  */
-visflow.Identity = function(params) {
-  visflow.Identity.base.constructor.call(this, params);
+visflow.Module = function(params) {
+  visflow.Module.base.constructor.call(this, params);
 
   /** @inheritDoc */
   this.ports = {
@@ -28,20 +28,20 @@ visflow.Identity = function(params) {
   };
 };
 
-_.inherit(visflow.Identity, visflow.ComputationNode);
+_.inherit(visflow.Module, visflow.ComputationNode);
 
 
 /** @inheritDoc */
-visflow.Identity.prototype.init = function() {
-  visflow.Identity.base.init.call(this);
+visflow.Module.prototype.init = function() {
+  visflow.Module.base.init.call(this);
 };
 
 /**
  * Serializes the compute node.
  * @return {!Object}
  */
-visflow.Identity.prototype.serialize = function() {
-  var result = visflow.Identity.base.serialize.call(this);
+visflow.Module.prototype.serialize = function() {
+  var result = visflow.Module.base.serialize.call(this);
   return result;
 };
 
@@ -49,27 +49,29 @@ visflow.Identity.prototype.serialize = function() {
  * Deserializes the compute node.
  * @param {!Object} save
  */
-visflow.Identity.prototype.deserialize = function(save) {
-  visflow.Identity.base.deserialize.call(this, save);
-  this.fillOptions(this.options, this.identityOptions());
+visflow.Module.prototype.deserialize = function(save) {
+  visflow.Module.base.deserialize.call(this, save);
+  this.fillOptions(this.options, this.moduleOptions());
 };
 
 /** @inheritDoc */
-visflow.Identity.prototype.processAsync = function(endProcess) {
+visflow.Module.prototype.processAsync = function(endProcess) {
   var inPort = this.getPort('in');
   var outPort = this.getPort('out');
   outPort.pack.copy(inPort.pack, true);
+  console.log(inPort.pack);
+  outPort.changed(true);
   endProcess();
 };
 
 /** @inheritDoc */
-visflow.Identity.prototype.showDetails = function() {
+visflow.Module.prototype.showDetails = function() {
   this.content.children().remove();
   $('<div></div>').text(this.type).appendTo(this.content);
 };
 
 /** @inheritDoc */
-visflow.Identity.prototype.getPortSubset = function(id) {
+visflow.Module.prototype.getPortSubset = function(id) {
   if (this.getPort('in').connected()) {
     var port = /** @type {!visflow.ComputationPort} */(this.getPort(id));
     return port.pack;

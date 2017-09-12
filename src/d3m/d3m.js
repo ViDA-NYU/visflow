@@ -1,35 +1,13 @@
 /**
- * @fileoverview D3M defs, tasks and methods.
+ * @fileoverview VisFlow D3M defs, tasks and methods.
  */
-
-/**
- * D3M name space, used to define global D3M constants.
- * @const
- */
-var d3m = {};
-
-/**
- * Function names for TA2/3 API.
- * @enum {string}
- */
-d3m.Rpc = {
-  CREATE_PIPELINES: 'CreatePipelines',
-  EXECUTE_PIPELINE: 'ExecutePipeline',
-  LIST_PIPELINES: 'ListPipelines',
-  DELETE_PIPELINES: 'DeletePipelines',
-  GET_CREATE_PIPELINE_RESULTS: 'GetCreatePipelineResults',
-  GET_EXECUTE_PIPELINE_RESULTS: 'GetExecutePiplineResults',
-  UPDATE_PROBLEM_SCHEMA: 'UpdateProblemSchema', // unsupported
-  START_SESSION: 'StartSession',
-  END_SESSION: 'EndSession'
-};
 
 
 /** @const */
 visflow.d3m = {};
 
 /** @private @const {string} */
-visflow.d3m.NEW_TASK_ = './dist/html/d3m/new-d3m.html';
+visflow.d3m.NEW_TASK_ = './dist/html/d3m/new-task.html';
 
 /**
  * D3M session id.
@@ -62,6 +40,13 @@ visflow.d3m.socket = new WebSocket(visflow.url.D3M_SOCKET);
 visflow.d3m.expects_ = {};
 
 /**
+ * Pipelines created for the current task (problem). These are listed in the
+ * pipeline list.
+ * @type {!Array<d3m.Pipeline>}
+ */
+visflow.d3m.pipelines = [];
+
+/**
  * Sends a message through the D3M socket.
  * @param {d3m.Rpc} fname Function name of the message.
  * @param {*} msg
@@ -88,18 +73,19 @@ visflow.d3m.socket.onmessage = function(event) {
   var data = /** @type {{
     rid: string,
     object: !Object
-  }} */(event.data);
+  }} */(JSON.parse(/** @type {string} */(event.data)));
 
   var rid = data.rid;
   var res = data.object;
+  console.log('socket message', res);
   if (!(rid in visflow.d3m.expects_)) {
-    visflow.error(res.rid, 'not expected but received');
+    visflow.error(rid, 'not expected but received');
   }
 
   // TODO(bowen): ask to send stream end message.
   switch (visflow.d3m.expects_[rid].fname) {
     case d3m.Rpc.START_SESSION:
-      visflow.d3m.sessionId = res['session_id'];
+      visflow.d3m.sessionId = res.context['session_id'];
       break;
     case d3m.Rpc.CREATE_PIPELINES:
       break;
@@ -133,8 +119,8 @@ visflow.d3m.startSession = function() {
     if (visflow.d3m.socket.readyState == 1) {
       clearInterval(wait);
       visflow.d3m.sendMessage(d3m.Rpc.START_SESSION, {
-        'user_agent': '',
-        'version': ''
+        'user_agent': 'visflow',
+        'version': 'v0.3'
       });
     } else {
       visflow.warning('waiting for D3M server connection');
@@ -169,7 +155,7 @@ visflow.d3m.newTask = function() {
     complete: function(dialog) {
       $.get(visflow.url.LIST_D3M_DATA,
         /**
-         * @param {!Array<{id: string, size: number}>} dataList
+         * @param {!Array<d3m.Dataset>} dataList
          */
         function(dataList) {
           visflow.d3m.taskSelection_(dialog, dataList);
@@ -181,42 +167,70 @@ visflow.d3m.newTask = function() {
 /**
  * Initializes d3m selection dialog.
  * @param {!jQuery} dialog
- * @param {!Array<{id: string, size: number}>} dataList
+ * @param {!Array<d3m.Dataset>} dataList
  * @private
  */
 visflow.d3m.taskSelection_ = function(dialog, dataList) {
   var table = dialog.find('table');
+  dataList.map(function(dataset) {
+    // Flatten the schema object into dataset descriptor.
+    dataset.metric = dataset.schema.metric;
+    dataset.taskType = dataset.schema.taskType;
+    dataset.taskSubtype = dataset.schema.taskSubType || 'none'; //
+
+    // Remove task type from task subtype to save column width.
+    var typeIndex = dataset.taskSubtype.toLowerCase().indexOf(dataset.taskType);
+    if (typeIndex != -1) {
+      dataset.taskSubtype = dataset.taskSubtype.substr(0, typeIndex);
+    }
+  });
   var dt = table.DataTable({
     data: dataList,
     select: 'single',
     columns: [
       {title: 'Task Id', data: 'id'},
+      {title: 'TaskType', data: 'taskType'},
+      {title: 'TaskSubtype', data: 'taskSubtype'},
+      {title: 'Metric', data: 'metric'},
       {title: 'Size', data: 'size'}
     ],
     pageLength: 5,
     lengthMenu: [5, 10, 20],
     pagingType: 'full'
   });
-  var taskId = '';
+  var problem = null;
   var confirm = dialog.find('#confirm');
   dt.on('select.dt', function(event, dt, type, tableIndices) {
-    var info = /** @type {DataTables} */(dt).row(tableIndices[0]).data();
-    taskId = info.id;
+    problem = dataList[tableIndices[0]];
     confirm.prop('disabled', false);
   }).on('deselect.dt', function() {
-    taskId = '';
+    problem = null;
     confirm.prop('disabled', true);
   });
 
   confirm.click(function() {
-    visflow.d3m.createPipelines(taskId);
+    visflow.d3m.createPipelines(/** @type {!d3m.Dataset} */(problem));
   });
 };
 
 /**
  * Requests pipeline creation for the given d3m.
- * @param {string} taskId
+ * @param {d3m.Dataset} problem
  */
-visflow.d3m.createPipelines = function(taskId) {
-  console.log('to create pipelines for', taskId);
+visflow.d3m.createPipelines = function(problem) {
+  console.log('creating pipelines for', problem);
+  var request = {
+    'session_id': visflow.d3m.sessionId,
+    'task': d3m.taskTypeToNumber(problem.schema.taskType),
+    'task_subtype': problem.schema.taskSubtype ?
+        d3m.taskSubtypeToNumber(problem.schema.taskSubtype) :
+        d3m.TaskSubtype.NONE,
+    'task_description': problem.schema.descriptionFile,
+    'metrics': [problem.schema.metric],
+    'target_features': [{
+      'feature_id': problem.schema.target.field
+    }]
+  };
+  console.log(request);
+  visflow.d3m.sendMessage(d3m.Rpc.CREATE_PIPELINES, request);
 };

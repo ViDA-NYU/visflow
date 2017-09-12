@@ -32,7 +32,7 @@ visflow.menu.init = function() {
  * @private
  */
 visflow.menu.initTaskDropdown_ = function() {
-  var task = $(visflow.menu.NAVBAR_SELECTOR_).find('#d3m');
+  var task = $(visflow.menu.NAVBAR_SELECTOR_).find('#task');
   task.find('#new').click(function() {
     visflow.d3m.newTask();
   });

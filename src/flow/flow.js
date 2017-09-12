@@ -334,6 +334,11 @@ visflow.Flow.prototype.propagate = function(startNode) {
   }
   visflow.progress.setPercentage(visflow.Flow.PROPAGATION_PROGRESS_BASE);
 
+  // Corner case: diagram has no propagation sources.
+  if (!topo.length) {
+    visflow.progress.end();
+  }
+
   var processedNodes = {};
   var processedCounter = 0;
   /**
@@ -752,6 +757,10 @@ visflow.Flow.prototype.isNodeSelected = function(node) {
  */
 visflow.Flow.prototype.keyAction = function(key, event) {
   switch (key) {
+    case 'ctrl+N':
+      visflow.d3m.newTask();
+      event.preventDefault();
+      break;
     case 'ctrl+E':
       visflow.diagram.new();
       event.preventDefault();

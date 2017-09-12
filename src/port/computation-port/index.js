@@ -72,9 +72,8 @@ visflow.ComputationPort.prototype.info = function() {
 /** @inheritDoc */
 visflow.ComputationPort.prototype.onConnected = function(edge) {
   if (this.isInput) {
-    if (edge.sourcePort.IS_SUBSET_PORT) {
-      this.pack = edge.sourcePort.getSubset();
-    }
+    // TODO(bowen): Check this. Right now we always try to subset-ize the input.
+    this.pack = edge.sourcePort.getSubset();
   }
   edge.sourcePort.changed(true);
 };
