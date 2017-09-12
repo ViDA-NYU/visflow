@@ -1,3 +1,4 @@
+from concurrent import futures
 import grpc
 from ta3ta2_api import core_pb2, core_pb2_grpc
 from protobuf_to_dict import protobuf_to_dict, dict_to_protobuf # this library to converts python grpc messages to dict
@@ -110,6 +111,10 @@ grpcCall = {
 
 
 class SocketHandler(websocket.WebSocketHandler):
+    def __init__(self, *args, **kwargs):
+        websocket.WebSocketHandler.__init__(*args, **kwargs)
+        self._thread_pool = futures.ThreadPoolExecutor(max_workers=10)
+
     def check_origin(self, origin):
         return True
 
@@ -122,6 +127,10 @@ class SocketHandler(websocket.WebSocketHandler):
     def on_message(self, message):
         message = json.loads(message)
 
+        # Do call on different thread
+        self._thread_pool.submit(self._do_request, message)
+
+    def _do_request(self, message):
         call = grpcCall[message['fname']]
 
         if call['inputType'] == MESSAGE_TYPE['BLOCKING']:
@@ -136,6 +145,7 @@ class SocketHandler(websocket.WebSocketHandler):
                     self.write_message(json.dumps(ret))
         else: # call['inputType'] == MESSAGE_TYPE['STREAMING']):
             raise NotImplementedError('Streaming input not supported')
+        self.finish()
 
 app = web.Application([
     (r'/ws', SocketHandler)
