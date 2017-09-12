@@ -1,5 +1,7 @@
+
 import grpc
 from ta3ta2_api import core_pb2, core_pb2_grpc, dataflow_ext_pb2, dataflow_ext_pb2_grpc, data_ext_pb2, data_ext_pb2_grpc
+from concurrent import futures
 from protobuf_to_dict import protobuf_to_dict, dict_to_protobuf # this library to converts python grpc messages to dict
 from enum import Enum
 from tornado import websocket, web, ioloop
@@ -8,8 +10,10 @@ import json
 
 channel = grpc.insecure_channel('localhost:50051')
 coreStub = core_pb2_grpc.CoreStub(channel)
+
 dataflow_extStub = dataflow_ext_pb2_grpc.DataflowExtStub(channel)
 data_extStub = data_ext_pb2_grpc.DataExtStub(channel)
+
 
 
 MESSAGE_TYPE = {
@@ -23,6 +27,7 @@ grpcCall = {
     #####################################################################################
     # core.proto
     #
+
 
     # rpc CreatePipelines(PipelineCreateRequest) returns (stream PipelineCreateResult) {}
     'CreatePipelines': 
@@ -217,6 +222,10 @@ grpcCall = {
 
 
 class SocketHandler(websocket.WebSocketHandler):
+    def __init__(self, *args, **kwargs):
+        websocket.WebSocketHandler.__init__(*args, **kwargs)
+        self._thread_pool = futures.ThreadPoolExecutor(max_workers=10)
+
     def check_origin(self, origin):
         return True
 
@@ -243,6 +252,7 @@ class SocketHandler(websocket.WebSocketHandler):
                     self.write_message(json.dumps(ret))
         else: # gc['inputType'] == MESSAGE_TYPE['STREAMING']):
             raise NotImplementedError('Streaming input not supported')
+
 
 app = web.Application([
     (r'/ws', SocketHandler)
