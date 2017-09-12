@@ -9,7 +9,7 @@ visflow.Network.prototype.initPanel = function(container) {
   var edgeDimensionList = this.getDimensionList(
     this.ports['inEdges'].pack.data);
 
-  this.panelElements = [
+  var units = [
     {
       constructor: visflow.Select,
       params: {
@@ -105,4 +105,5 @@ visflow.Network.prototype.initPanel = function(container) {
       }
     }
   ];
+  this.initInterface(units);
 };

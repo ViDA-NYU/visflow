@@ -62,13 +62,13 @@ visflow.property.isColorProperty = function(property) {
 /**
  * @param {!Object} params
  * @constructor
- * @extends {visflow.SubsetNode}
+ * @extends {visflow.Node}
  */
 visflow.Property = function(params) {
   visflow.Property.base.constructor.call(this, params);
 };
 
-_.inherit(visflow.Property, visflow.SubsetNode);
+_.inherit(visflow.Property, visflow.Node);
 
 /** @inheritDoc */
 visflow.Property.prototype.RESIZABLE = false;

@@ -14,16 +14,18 @@ visflow.Network = function(params) {
    * Network has special in/out ports to handle nodes and edges separately.
    */
   this.ports = {
-    'in': new visflow.SubsetPort({
+    'in': new visflow.Port({
       node: this,
       id: 'in',
       isInput: true,
+      isConstants: false,
       text: 'input nodes'
     }),
-    'inEdges': new visflow.SubsetPort({
+    'inEdges': new visflow.Port({
       node: this,
       id: 'inEdges',
       isInput: true,
+      isConstants: false,
       text: 'input edges'
     }),
     'outs': new visflow.SelectionPort({
@@ -37,16 +39,18 @@ visflow.Network = function(params) {
       text: 'selected edges',
       fromPort: 'inEdges'
     }),
-    'out': new visflow.MultiSubsetPort({
+    'out': new visflow.MultiplePort({
       node: this,
       id: 'out',
       isInput: false,
+      isConstants: false,
       text: 'output nodes'
     }),
-    'outEdges': new visflow.MultiSubsetPort({
+    'outEdges': new visflow.MultiplePort({
       node: this,
       id: 'outEdges',
       isInput: false,
+      isConstants: false,
       text: 'output edges',
       fromPort: 'inEdges'
     })
@@ -266,8 +270,8 @@ visflow.Network.prototype.selectItemsInBox_ = function() {
 
 /** @inheritDoc */
 visflow.Network.prototype.isDataEmpty = function() {
-  var inpackNodes = this.getDataInPort().pack;
-  var inpackEdges = this.getPort('inEdges').getSubset();
+  var inpackNodes = this.ports['in'].pack;
+  var inpackEdges = this.ports['inEdges'].pack;
   return inpackNodes.isEmpty() || inpackEdges.isEmpty();
 };
 
@@ -465,7 +469,7 @@ visflow.Network.prototype.updateEdges_ = function() {
  * @private
  */
 visflow.Network.prototype.applyProperties_ = function() {
-  var items = this.getDataInPort().pack.items;
+  var items = this.ports['in'].pack.items;
   this.nodeProps_ = [];
   for (var nodeIndex in this.nodes) {
     var index = +nodeIndex;
@@ -489,7 +493,7 @@ visflow.Network.prototype.applyProperties_ = function() {
     }
     this.nodeProps_.push(prop);
   }
-  var edgeItems = this.getPort('inEdges').getSubset().items;
+  var edgeItems = this.ports['inEdges'].pack.items;
   this.edgeProps_ = [];
   for (var edgeIndex in this.edges) {
     var index = +edgeIndex;
@@ -541,8 +545,8 @@ visflow.Network.prototype.inputChanged = function() {
  * Processes the network data.
  */
 visflow.Network.prototype.processNetwork = function() {
-  var inpackNodes = this.getDataInPort().getSubset();
-  var inpackEdges = this.getPort('inEdges').getSubset();
+  var inpackNodes = this.ports['in'].pack;
+  var inpackEdges = this.ports['inEdges'].pack;
 
   if (inpackEdges.isEmpty() || inpackNodes.isEmpty()) {
     return;
@@ -557,7 +561,7 @@ visflow.Network.prototype.processNetwork = function() {
  * @private
  */
 visflow.Network.prototype.processNodes_ = function() {
-  var inpack = this.getDataInPort().pack;
+  var inpack = this.ports['in'].pack;
   var items = inpack.items;
   var data = inpack.data;
 
@@ -594,7 +598,7 @@ visflow.Network.prototype.processNodes_ = function() {
  * @private
  */
 visflow.Network.prototype.processEdges_ = function() {
-  var inpackNodes = this.getDataInPort().pack;
+  var inpackNodes = this.ports['in'].pack;
   var nodeItems = inpackNodes.items;
   var nodeData = inpackNodes.data;
   var nodeIdToIndex = {};
@@ -604,7 +608,7 @@ visflow.Network.prototype.processEdges_ = function() {
     nodeIdToIndex[id] = index;
   }
 
-  var inpack = this.getPort('inEdges').getSubset();
+  var inpack = this.ports['inEdges'].pack;
   var items = inpack.items;
   var data = inpack.data;
 
@@ -643,7 +647,7 @@ visflow.Network.prototype.processEdges_ = function() {
  * Validates the network.
  */
 visflow.Network.prototype.validateNetwork = function() {
-  var inpackNodes = this.getDataInPort().getSubset();
+  var inpackNodes = this.ports['in'].pack;
   var nodeItems = inpackNodes.items;
   var deletedNodes = {};
   for (var nodeIndex in this.nodes) {
@@ -654,7 +658,7 @@ visflow.Network.prototype.validateNetwork = function() {
     }
   }
 
-  var inpackEdges = this.getPort('inEdges').getSubset();
+  var inpackEdges = this.ports['inEdges'].pack;
   var edgeItems = inpackEdges.items;
   for (var edgeIndex in this.edges) {
     var index = +edgeIndex;
@@ -671,8 +675,8 @@ visflow.Network.prototype.validateNetwork = function() {
 /** @inheritDoc */
 visflow.Network.prototype.processSelection = function() {
   visflow.Network.base.processSelection.call(this); // process node selection
-  var inpack = this.getPort('inEdges').getSubset();
-  var outspack = this.getPort('outsEdges').getSubset();
+  var inpack = /** @type {!visflow.Package} */(this.ports['inEdges'].pack);
+  var outspack = this.ports['outsEdges'].pack;
   outspack.copy(inpack);
   outspack.filter(_.allKeys(this.selectedEdges));
 };
@@ -682,7 +686,7 @@ visflow.Network.prototype.processSelection = function() {
  */
 visflow.Network.prototype.validateSelection = function() {
   visflow.Network.base.validateSelection.call(this); // clear selection of nodes
-  var inpackEdges = this.getPort('inEdges').getSubset();
+  var inpackEdges = this.ports['inEdges'].pack;
   for (var edgeIndex in this.selectedEdges) { // clear selection of edges
     var index = +edgeIndex;
     if (inpackEdges.items[index] == null) {
@@ -692,13 +696,13 @@ visflow.Network.prototype.validateSelection = function() {
 };
 
 /** @inheritDoc */
-visflow.Network.prototype.processSync = function() {
-  var inpackNodes = this.getDataInPort().getSubset();
-  var inpackEdges = this.getPort('inEdges').getSubset();
-  var outpackNodes = this.getDataOutPort().getSubset();
-  var outpackEdges = this.getPort('outEdges').getSubset();
-  var outspackNodes = this.getPort('outs').getSubset();
-  var outspackEdges = this.getPort('outsEdges').getSubset();
+visflow.Network.prototype.process = function() {
+  var inpackNodes = /** @type {!visflow.Package} */(this.ports['in'].pack);
+  var inpackEdges = /** @type {!visflow.Package} */(this.ports['inEdges'].pack);
+  var outpackNodes = this.ports['out'].pack;
+  var outpackEdges = this.ports['outEdges'].pack;
+  var outspackNodes = this.ports['outs'].pack;
+  var outspackEdges = this.ports['outsEdges'].pack;
 
   if (this.force_ != null) {
     this.force_.stop();  // Prevent further update
@@ -778,7 +782,7 @@ visflow.Network.prototype.dataChanged = function() {
  */
 visflow.Network.prototype.findLabelByDimension_ = function() {
   var labelBy = null;
-  this.getDataInPort().pack.data.dimensionTypes.forEach(function(type, index) {
+  this.ports['in'].pack.data.dimensionTypes.forEach(function(type, index) {
     if (labelBy == null && type == visflow.ValueType.STRING) {
       labelBy = index;
     }
@@ -792,7 +796,7 @@ visflow.Network.prototype.findLabelByDimension_ = function() {
  * @private
  */
 visflow.Network.prototype.findEdgeDimensions_ = function() {
-  var dimTypes = this.getPort('inEdges').getSubset().data.dimensionTypes;
+  var dimTypes = this.ports['inEdges'].pack.data.dimensionTypes;
   var sourceBy = null;
   var targetBy = null;
   dimTypes.forEach(function(type, index) {

@@ -5,12 +5,13 @@
 /**
  * @param {visflow.params.Port} params
  * @constructor
- * @extends {visflow.MultiSubsetPort}
+ * @extends {visflow.Port}
  */
 visflow.SelectionPort = function(params) {
   var paramsApplied = _.extend(
     {
       isInput: false,
+      isConstants: false,
       text: 'selected'
     },
     params
@@ -18,7 +19,7 @@ visflow.SelectionPort = function(params) {
   visflow.SelectionPort.base.constructor.call(this, paramsApplied);
 };
 
-_.inherit(visflow.SelectionPort, visflow.MultiSubsetPort);
+_.inherit(visflow.SelectionPort, visflow.MultiplePort);
 
 /** @inheritDoc */
 visflow.SelectionPort.prototype.setContainer = function(container) {

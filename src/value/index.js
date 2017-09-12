@@ -5,14 +5,14 @@
 /**
  * @param {visflow.params.Node} params
  * @constructor
- * @extends {visflow.SubsetNode}
+ * @extends {visflow.Node}
  * @abstract
  */
 visflow.Value = function(params) {
   visflow.Value.base.constructor.call(this, params);
 };
 
-_.inherit(visflow.Value, visflow.SubsetNode);
+_.inherit(visflow.Value, visflow.Node);
 
 /** @inheritDoc */
 visflow.Value.prototype.init = function() {
@@ -21,8 +21,8 @@ visflow.Value.prototype.init = function() {
 
 /**
  * Gets the constant output port of the value node.
- * @return {!visflow.ConstantPort}
+ * @return {!visflow.Port}
  */
 visflow.Value.prototype.getConstantOutPort = function() {
-  return /** @type {!visflow.ConstantPort} */(this.getPort('out'));
+  return this.ports['out'];
 };
