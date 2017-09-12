@@ -422,6 +422,18 @@ visflow.utils.formatTime = function(value) {
 };
 
 /**
+ * Uppercases the first letter of the string.
+ * @param {string} str
+ * @return {string}
+ */
+visflow.utils.uppercaseFirstLetter = function(str) {
+  if (!str.length) {
+    return str;
+  }
+  return str[0].toUpperCase() + str.substr(1);
+};
+
+/**
  * Performs utils initialization.
  */
 visflow.utils.init();

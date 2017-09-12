@@ -62,7 +62,9 @@ d3m.Rpc = {
   GET_EXECUTE_PIPELINE_RESULTS: 'GetExecutePiplineResults',
   UPDATE_PROBLEM_SCHEMA: 'UpdateProblemSchema', // unsupported
   START_SESSION: 'StartSession',
-  END_SESSION: 'EndSession'
+  END_SESSION: 'EndSession',
+  DESCRIBE_DATAFLOW: 'DescribeDataflow',
+  GET_DATAFLOW_RESULTS: 'GetDataflowResults'
 };
 
 

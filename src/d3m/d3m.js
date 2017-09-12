@@ -88,6 +88,26 @@ visflow.d3m.socket.onmessage = function(event) {
       visflow.d3m.sessionId = res.context['session_id'];
       break;
     case d3m.Rpc.CREATE_PIPELINES:
+      var pipelineInfo = res['pipeline_info'];
+      var pipeline = {
+        id: res['pipeline_id'],
+        progress: res['progress_info'],
+        status: res['response_info'].status.code,
+        result_uris: pipelineInfo && pipelineInfo['predict_result_uris'] ||
+        undefined,
+        scores: pipelineInfo && pipelineInfo.scores
+      };
+      var existing = false;
+      for (var i = 0; i < visflow.d3m.pipelines.length && !existing; i++) {
+        if (visflow.d3m.pipelines[i].id == pipeline.id) {
+          $.extend(visflow.d3m.pipelines[i], pipeline);
+          existing = true;
+        }
+      }
+      if (!existing) {
+        visflow.d3m.pipelines.push(pipeline);
+      }
+      visflow.pipelinePanel.update();
       break;
     case d3m.Rpc.EXECUTE_PIPELINE:
       break;
@@ -97,6 +117,12 @@ visflow.d3m.socket.onmessage = function(event) {
       break;
     case d3m.Rpc.GET_EXECUTE_PIPELINE_RESULTS:
       break;
+    case d3m.Rpc.DESCRIBE_DATAFLOW:
+      break;
+    case d3m.Rpc.GET_DATAFLOW_RESULTS:
+      break;
+    default:
+      visflow.error('unrecognized response from D3M socket');
   }
 };
 
@@ -176,13 +202,8 @@ visflow.d3m.taskSelection_ = function(dialog, dataList) {
     // Flatten the schema object into dataset descriptor.
     dataset.metric = dataset.schema.metric;
     dataset.taskType = dataset.schema.taskType;
-    dataset.taskSubtype = dataset.schema.taskSubType || 'none'; //
-
-    // Remove task type from task subtype to save column width.
-    var typeIndex = dataset.taskSubtype.toLowerCase().indexOf(dataset.taskType);
-    if (typeIndex != -1) {
-      dataset.taskSubtype = dataset.taskSubtype.substr(0, typeIndex);
-    }
+    dataset.taskSubtype = d3m.conciseTaskSubtype(dataset.taskType,
+      dataset.schema.taskSubType || 'none'); //
   });
   var dt = table.DataTable({
     data: dataList,
@@ -218,19 +239,34 @@ visflow.d3m.taskSelection_ = function(dialog, dataList) {
  * @param {d3m.Dataset} problem
  */
 visflow.d3m.createPipelines = function(problem) {
-  console.log('creating pipelines for', problem);
+  visflow.pipelinePanel.setTask(problem);
   var request = {
-    'session_id': visflow.d3m.sessionId,
+    'context': {
+      'session_id': visflow.d3m.sessionId
+    },
     'task': d3m.taskTypeToNumber(problem.schema.taskType),
     'task_subtype': problem.schema.taskSubtype ?
         d3m.taskSubtypeToNumber(problem.schema.taskSubtype) :
         d3m.TaskSubtype.NONE,
     'task_description': problem.schema.descriptionFile,
-    'metrics': [problem.schema.metric],
+    'metrics': [d3m.metricToNumber(problem.schema.metric)],
     'target_features': [{
       'feature_id': problem.schema.target.field
     }]
   };
-  console.log(request);
   visflow.d3m.sendMessage(d3m.Rpc.CREATE_PIPELINES, request);
+};
+
+/**
+ * Loads a pipeline data flow description.
+ * @param {string} pipelineId
+ */
+visflow.d3m.loadPipeline = function(pipelineId) {
+  console.log('load pipeline', pipelineId);
+  visflow.d3m.sendMessage(d3m.Rpc.DESCRIBE_DATAFLOW, {
+    'context': {
+      'session_id': visflow.d3m.sessionId
+    },
+    'pipeline_id': pipelineId
+  });
 };

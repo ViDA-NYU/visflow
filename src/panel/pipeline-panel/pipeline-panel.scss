@@ -3,16 +3,32 @@
 #pipeline-panel {
   height: 150px;
   left: 100px;
+  padding: $padding;
   position: relative;
   top: 40px;
   width: calc(100% - 100px * 2);
   z-index: 101;
 
+  .header > label {
+    border: 1px solid $gray-a;
+    border-radius: $border-radius;
+    color: $gray-5;
+    padding: 0 $padding;
+  }
+
   .content {
     @include ui-border;
 
     background-color: $ui-background;
-    height: 100%;
-    padding: $padding-large;
+    padding: $padding;
+
+    .table-container {
+      background: $white;
+      padding: $padding;
+
+      td {
+        padding: $padding;
+      }
+    }
   }
 }
