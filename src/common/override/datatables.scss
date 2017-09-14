@@ -7,3 +7,12 @@
 .input-sm {
   border-radius: 0;
 }
+
+// DataTables paginate button text
+.pagination > li > a {
+  color: $gray-3;
+
+  &:hover {
+    color: $theme-color-dark;
+  }
+}

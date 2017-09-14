@@ -6,7 +6,8 @@
  * @typedef {{
  *   id: string,
  *   type: string,
- *   container: !jQuery
+ *   container: !jQuery,
+ *   ports: (!Object<!visflow.Port>|undefined)
  * }}
  */
 visflow.params.Node;
@@ -17,8 +18,8 @@ visflow.params.Node;
  * @constructor
  */
 visflow.Node = function(params) {
-  if (params == null) {
-    visflow.error('null params');
+  if (params == undefined) {
+    visflow.error('no params given for nodes');
     return;
   }
 
@@ -603,9 +604,10 @@ visflow.Node.prototype.initContextMenu = function() {
     .on('vf.delete', this.delete.bind(this))
     .on('vf.minimize', this.toggleMinimized.bind(this))
     .on('vf.panel', this.panel.bind(this))
-    .on('vf.label', this.toggleLabel.bind(this))
+    .on('vf.label', this.toggleLabel.bind(this));
     //.on('vf.flowSense', this.flowSenseInput.bind(this))
-    .on('vf.beforeOpen', function(event, menuContainer) {
+  visflow.listen(this.contextMenu, visflow.Event.BEFORE_OPEN,
+    function(event, menuContainer) {
       var minimize = menuContainer.find('#minimize');
       if (this.options.minimized) {
         minimize.children('.glyphicon')
@@ -670,7 +672,8 @@ visflow.Node.prototype.updateEdges = function() {
 };
 
 /**
- * Creates and shows all the ports.
+ * Creates and shows all the ports. This also informs all the ports of their
+ * parent nodes.
  */
 visflow.Node.prototype.createPorts = function() {
   this.container.find('.port').remove();
@@ -685,6 +688,7 @@ visflow.Node.prototype.createPorts = function() {
     var container = $('<div></div>')
       .css('top', inTopBase + index * portStep)
       .appendTo(this.container);
+    port.setNode(this);
     port.setContainer(container);
   }, this);
 
@@ -695,6 +699,7 @@ visflow.Node.prototype.createPorts = function() {
     var container = $('<div></div>')
       .css('top', outTopBase + index * portStep)
       .appendTo(this.container);
+    port.setNode(this);
     port.setContainer(container);
   }, this);
 
@@ -1215,6 +1220,9 @@ visflow.Node.prototype.getDimensionNames = function() {
  * @return {!visflow.Port}
  */
 visflow.Node.prototype.getPort = function(id) {
+  if (!(id in this.ports)) {
+    visflow.error('port', id, 'is not in the node');
+  }
   return this.ports[id];
 };
 

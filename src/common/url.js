@@ -6,7 +6,12 @@
 visflow.url = {};
 
 /** @const {string} */
+visflow.url.D3M_SOCKET = 'ws://localhost:8888/ws';
+
+/** @const {string} */
 visflow.url.LIST_DATA = './server/list-data.php';
+/** @const {string} */
+visflow.url.LIST_D3M_DATA = './server/list-d3m-data.php';
 /** @const {string} */
 visflow.url.UPLOAD_DATA = './server/upload-data.php';
 /** @const {string} */

@@ -16,6 +16,7 @@ visflow.menu.NAVBAR_SELECTOR_ = '.visflow > .navbar-fixed-top';
  */
 visflow.menu.init = function() {
   var navbar = $(visflow.menu.NAVBAR_SELECTOR_);
+  visflow.menu.initTaskDropdown_();
   visflow.menu.initDiagramDropdown_();
   visflow.edit.initDropdown(navbar);
   visflow.view.initDropdown(navbar);
@@ -24,6 +25,17 @@ visflow.menu.init = function() {
   visflow.menu.initTooltips_();
 
   visflow.menu.initUpdateHandlers_();
+};
+
+/**
+ * Initializes D3M d3m dropdown.
+ * @private
+ */
+visflow.menu.initTaskDropdown_ = function() {
+  var task = $(visflow.menu.NAVBAR_SELECTOR_).find('#task');
+  task.find('#new').click(function() {
+    visflow.d3m.newTask();
+  });
 };
 
 /**
@@ -114,13 +126,24 @@ visflow.menu.initUpdateHandlers_ = function() {
 
       navbar.find('#save, #load').addClass('disabled');
     });
+
+  visflow.listen(visflow.options, visflow.Event.CHANGE, function(event, data) {
+    if (data.type == visflow.Event.SHOW_D3M_PIPELINE) {
+      visflow.menu.updateVisibility_();
+    }
+  });
 };
 
 /**
- * Updates the enabled/disabled state of the add node item in the menu.
+ * Updates the enabled/disabled state of the menu items.
+ * @private
  */
-visflow.menu.updateVisMode = function() {
+visflow.menu.updateVisibility_ = function() {
   var navbar = $('.visflow > .navbar-fixed-top');
+
+  var diagramEditingDisabled = !visflow.options.isDiagramEditable();
   var addNode = navbar.find('#add-node');
-  addNode.toggleClass('disabled', visflow.flow.visMode);
+  addNode.toggleClass('disabled', diagramEditingDisabled);
+  var showNodePanel = navbar.find('#show-node-panel');
+  showNodePanel.toggleClass('disabled', diagramEditingDisabled);
 };

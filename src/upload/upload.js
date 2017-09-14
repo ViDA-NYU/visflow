@@ -391,22 +391,13 @@ visflow.upload.listDataTable = function(table, dataList) {
     columnDefs: [
       {
         type: 'data-size',
-        // Size
         render: function(size) {
-          var base = 1000;
-          if (size < base) {
-            return size + 'B';
-          } else if (size < base * base) {
-            return (size / base).toFixed(2) + 'KB';
-          } else {
-            return (size / base / base).toFixed(2) + 'MB';
-          }
+          return visflow.utils.fileSizeDisplay(size);
         },
         targets: 2
       },
       {
-        type: 'date',
-        // Last Modified
+        type: 'date', // Last Modified
         render: function(lastModified) {
           return (new Date(lastModified)).toLocaleString();
         },

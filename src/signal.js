@@ -7,7 +7,11 @@ visflow.Event = {
   PROCESSED: 0,
   READY: 1,
   VISMODE: 2,
-  CHANGE: 3
+  CHANGE: 3,
+  EXPORT: 4,
+  EXPLORE: 5,
+  SHOW_D3M_PIPELINE: 100,
+  BEFORE_OPEN: 200
 };
 
 /**
@@ -50,7 +54,7 @@ visflow.unlisten = function(obj, event) {
 visflow.error = function(args) {
   var msg = Array.prototype.slice.call(arguments).join(' ');
   console.error(msg);
-  $('#error').text(msg).parent()
+  $('#error').text(msg).parent().stop()
     .slideDown(visflow.const.ALERT_TRANSITION_DURATION);
 };
 
@@ -61,7 +65,7 @@ visflow.error = function(args) {
 visflow.warning = function(args) {
   var msg = Array.prototype.slice.call(arguments).join(' ');
   console.warn(msg);
-  $('#warning').text(msg).parent()
+  $('#warning').text(msg).parent().stop()
     .slideDown(visflow.const.ALERT_TRANSITION_DURATION)
     .delay(visflow.const.MESSAGE_DURATION)
     .slideUp(visflow.const.ALERT_TRANSITION_DURATION);
@@ -74,7 +78,7 @@ visflow.warning = function(args) {
 visflow.success = function(args) {
   var msg = Array.prototype.slice.call(arguments).join(' ');
   console.info(msg);
-  $('#success').text(msg).parent()
+  $('#success').text(msg).parent().stop()
     .slideDown(visflow.const.ALERT_TRANSITION_DURATION)
     .delay(visflow.const.MESSAGE_DURATION)
     .slideUp(visflow.const.ALERT_TRANSITION_DURATION);

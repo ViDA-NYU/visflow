@@ -10,6 +10,7 @@ $base_path = '/data/visflow/';
 $data_path = 'data/';
 $diagram_path = 'diagrams/';
 $nlp_path = 'nlp/';
+$d3m_data_path = '/data/d3m/';
 
 $min_username_length = 6;
 $min_password_length = 8;
@@ -40,6 +41,9 @@ if ($file)
       case 'nlp_path':
         $nlp_path = $val;
         break;
+      case 'd3m_data_path':
+        $d3m_data_path = $val;
+        break;
     }
   }
   fclose($file);
@@ -55,6 +59,7 @@ define('BASE_PATH', $base_path);
 define('DATA_PATH', $data_path);
 define('DIAGRAM_PATH', $diagram_path);
 define('NLP_PATH', $nlp_path);
+define('D3M_DATA_PATH', $d3m_data_path);
 
 check_dir(BASE_PATH . DATA_PATH);
 check_dir(BASE_PATH . DIAGRAM_PATH);
