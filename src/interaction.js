@@ -183,7 +183,7 @@ visflow.interaction.trackMousemove = function(opt_enabled) {
  */
 visflow.interaction.toggleAltHold = function() {
   visflow.interaction.altHold_ = !visflow.interaction.altHold_;
-  visflow.signal(visflow.interaction, 'alt');
+  visflow.signal(visflow.interaction, visflow.Event.ALT);
 };
 
 /**
@@ -234,7 +234,7 @@ visflow.interaction.keyRelease = function(key) {
         break;
       case keyCodes.ALT:
         visflow.interaction.alted = false;
-        visflow.signal(visflow.interaction, 'alt');
+        visflow.signal(visflow.interaction, visflow.Event.ALT);
         visflow.interaction.visualizationBlocking = true;
         visflow.interaction.mainContainer_.css('cursor', '');
         break;
@@ -325,7 +325,7 @@ visflow.interaction.keyPress = function(event) {
       break;
     case keyCodes.ALT:
       visflow.interaction.alted = true;
-      visflow.signal(visflow.interaction, 'alt');
+      visflow.signal(visflow.interaction, visflow.Event.ALT);
       visflow.interaction.visualizationBlocking = false;
       break;
     case keyCodes.CTRL:
@@ -403,18 +403,24 @@ visflow.interaction.mainContextMenu_ = function() {
     container: visflow.interaction.mainContainer_,
     items: visflow.interaction.MAIN_CONTEXTMENU_ITEMS_
   });
-  $(contextMenu)
-    .on('vf.addNode', function() {
-      visflow.popupPanel.show();
-    })
-    .on('vf.flowSense', function() {
-      visflow.nlp.input();
-    });
-  visflow.listen(contextMenu, visflow.Event.BEFORE_OPEN,
-    function(event, menuContainer) {
-      menuContainer.find('#addNode')
-        .toggleClass('disabled', !visflow.options.isDiagramEditable());
-    });
+
+  visflow.listenMany(contextMenu, [
+    {
+      event: visflow.Event.ADD_NODE,
+      callback: visflow.popupPanel.show
+    },
+    {
+      event: visflow.Event.FLOWSENSE,
+      callback: visflow.nlp.input
+    },
+    {
+      event: visflow.Event.BEFORE_OPEN,
+      callback: function(event, menuContainer) {
+        menuContainer.find('#addNode')
+          .toggleClass('disabled', !visflow.options.isDiagramEditable());
+      }
+    }
+  ]);
 };
 
 /**

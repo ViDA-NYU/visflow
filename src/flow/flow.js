@@ -112,7 +112,6 @@ visflow.Flow.prototype.resetFlow = function() {
   this.edgeSelected = null;
 };
 
-
 /**
  * Creates a node of given type.
  * @param {string} type
