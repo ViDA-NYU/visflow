@@ -53,8 +53,8 @@ visflow.contextMenu.HOT_KEYS = {
  * @constructor
  */
 visflow.ContextMenu = function(params) {
-  if (params == null) {
-    visflow.error('null params');
+  if (params == undefined) {
+    visflow.error('no params given for ContextMenu');
     return;
   }
 

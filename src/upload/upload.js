@@ -115,7 +115,7 @@ visflow.upload.upload_ = function(formParams) {
         visflow.upload.complete_();
       }
       visflow.upload.complete_ = null;
-      visflow.signal(visflow.upload, 'uploaded');
+      visflow.signal(visflow.upload, visflow.Event.UPLOADED);
     })
     .fail(function(res) {
       visflow.error('failed to update data:', res.responseText);
