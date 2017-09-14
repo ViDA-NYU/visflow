@@ -85,6 +85,11 @@ visflow.Flow.prototype.init = function() {
  * Resets the loaded flow.
  */
 visflow.Flow.prototype.resetFlow = function() {
+  if (this.force) {
+    this.force.stop();
+  }
+  this.stopNodeTransitions();
+
   // Clear visMode.
   this.visMode = false;
   visflow.signal(visflow.flow, visflow.Event.VISMODE);
@@ -111,14 +116,26 @@ visflow.Flow.prototype.resetFlow = function() {
 /**
  * Creates a node of given type.
  * @param {string} type
- * @param {Object=} save Saved node data for de-serialization.
+ * @param {{
+ *   save: (!Object|undefined),
+ *   onReady: (Function|undefined),
+ *   ports: (!Object|undefined)
+ * }=} opt_params
+ *   save: Saved node data for de-serialization.
+ *   onReady: Callback on node creation.
+ *   ports: Port specifications for the node.
  * @return {visflow.Node}
  */
-visflow.Flow.prototype.createNode = function(type, save) {
+visflow.Flow.prototype.createNode = function(type, opt_params) {
+  var params = opt_params || {};
+  var save = params.save;
+  var onReady = params.onReady;
+  var ports = params.ports;
+
   // Convert to camel case. HTML use dash separated strings.
   type = $.camelCase(type);
 
-  var params = {};
+  var nodeParams = {};
 
   var obsoleteTypes = visflow.Flow.obsoleteTypes();
   // Convert old types to new ones.
@@ -134,12 +151,13 @@ visflow.Flow.prototype.createNode = function(type, save) {
   }
   var nodeConstructor = constructors[type];
 
-  _.extend(params, {
+  _.extend(nodeParams, {
     id: ++this.nodeCounter_,
     type: type,
-    container: visflow.viewManager.createNodeContainer()
+    container: visflow.viewManager.createNodeContainer(),
+    ports: ports
   });
-  var newNode = new nodeConstructor(params);
+  var newNode = new nodeConstructor(nodeParams);
   visflow.listen(newNode, visflow.Event.READY, function() {
     if (save) {
       // If node is created from diagram loading, then de-serialize.
@@ -157,6 +175,10 @@ visflow.Flow.prototype.createNode = function(type, save) {
       // Node size might be de-serialized from save and a resize event must be
       // explicitly fired in order to re-draw correctly.
       this.resize();
+    }
+
+    if (onReady) {
+      onReady();
     }
   }.bind(newNode));
 
@@ -305,31 +327,17 @@ visflow.Flow.prototype.propagate = function(startNode) {
 
   var topo = []; // visited node list, in reversed topological order
   var visited = {};
-  /**
-   * Traverses the node and its successors (downflow nodes). Starting from a
-   * given node.
-   * @param {!visflow.Node|!Array<!visflow.Node>} node
-   */
-  var traverse = function(node) {
-    if (visited[node.id]) {
-      return;
-    }
-    visited[node.id] = true;
-    node.outputTargetNodes().forEach(function(node) {
-      traverse(node);
-    });
-    topo.push(node);
-  };
 
   // Traverse startNode(s) to get all nodes touched by propagation.
   visflow.progress.start('propagating', true);
   if (visflow.Node.prototype.isPrototypeOf(startNode)) {
     startNode.isPropagationSource = true;
-    traverse(startNode);
+    visflow.utils.traverse(/** @type {!visflow.Node} */(startNode), visited,
+      topo);
   } else if (startNode instanceof Array) {
     startNode.forEach(function(node) {
       node.isPropagationSource = true;
-      traverse(node);
+      visflow.utils.traverse(node, visited, topo);
     });
   }
   visflow.progress.setPercentage(visflow.Flow.PROPAGATION_PROGRESS_BASE);
@@ -482,7 +490,7 @@ visflow.Flow.prototype.deserializeFlow = function(flowObject) {
   flowObject.nodes.forEach(function(nodeSaved) {
     var type = visflow.Flow.standardizeNodeType(nodeSaved.type);
     loadCount++;
-    var newNode = this.createNode(type, nodeSaved);
+    var newNode = this.createNode(type, {save: nodeSaved});
     visflow.listen(newNode, visflow.Event.READY, function() {
       loadCount--;
       if (loadCount == 0) {
@@ -664,7 +672,7 @@ visflow.Flow.prototype.addNodeHover = function(nodes) {
   }
   for (var i in toAdd) {
     var node = toAdd[i];
-    node.container.addClass('hover');
+    node.getContainer().addClass('hover');
     this.nodesHovered[node.id] = node;
   }
 };
@@ -959,6 +967,15 @@ visflow.Flow.prototype.iterateActiveness = function() {
     var node = this.nodes[id];
     node.activeness /= 2.0; // exponentially decrease activeness
   }
+};
+
+/**
+ * Stops all transitions on the node.
+ */
+visflow.Flow.prototype.stopNodeTransitions = function() {
+  _.each(this.nodes, function(node) {
+    node.getContainer().stop(true);
+  });
 };
 
 /**

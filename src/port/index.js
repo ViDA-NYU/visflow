@@ -4,8 +4,8 @@
 
 /**
  * @typedef {{
- *   node: !visflow.Node,
  *   id: string,
+ *   node: (visflow.Node|undefined),
  *   text: (string|undefined),
  *   isInput: (boolean|undefined),
  *   fromPort: (string|undefined)
@@ -29,7 +29,7 @@ visflow.Port = function(params) {
    * Parent node of the port.
    * @type {!visflow.Node}
    */
-  this.node = params.node;
+  this.node = params.node || /** @type {!visflow.Node} */({});
 
   /**
    * Port ID, corresponding to the parent node.
@@ -46,7 +46,10 @@ visflow.Port = function(params) {
   /** @type {boolean} */
   this.isInput = !!params.isInput;
 
-  /** @type {string} */
+  /**
+   * Which port does this port get its package from.
+   * @type {string}
+   */
   this.fromPort = params.fromPort !== undefined ? params.fromPort : 'in';
 
   /**
@@ -217,6 +220,14 @@ visflow.Port.prototype.setContainer = function(container) {
 };
 
 /**
+ * Sets the node of the container.
+ * @param {!visflow.Node} node
+ */
+visflow.Port.prototype.setNode = function(node) {
+  this.node = node;
+};
+
+/**
  * Prepares the contextMenu for the port.
  * @return {!visflow.ContextMenu}
  */
@@ -248,6 +259,50 @@ visflow.Port.prototype.info = function() {
 };
 
 /**
+ * Prepares the dragging interaction. If a port supports non-standard dragging,
+ * it should override this method.
+ */
+visflow.Port.prototype.interactionDrag = function() {
+  this.container.draggable({
+    helper: function() {
+      return $('<div></div>');
+    },
+    start: function(event) {
+      visflow.interaction.dragstartHandler({
+        type: 'port',
+        port: this,
+        event: event
+      });
+    }.bind(this),
+    drag: function(event) {
+      visflow.interaction.dragmoveHandler({
+        type: 'port',
+        port: this,
+        event: event
+      });
+    }.bind(this),
+    stop: function(event) {
+      visflow.interaction.dragstopHandler({
+        type: 'port',
+        event: event
+      });
+    }.bind(this)
+  }).droppable({
+      hoverClass: 'hover',
+      tolerance: 'pointer',
+      accept: this.isInput ? '.port.right' : '.port.left',
+      greedy: true,
+      drop: function(event) {
+        visflow.interaction.dropHandler({
+          type: 'port',
+          port: this,
+          event: event
+        });
+      }.bind(this)
+    });
+};
+
+/**
  * Prepares the interaction of the port.
  * @protected
  */
@@ -265,45 +320,9 @@ visflow.Port.prototype.interaction = function() {
     }.bind(this))
     .mouseleave(function() {
       visflow.flow.clearEdgeHover();
-    }.bind(this))
-    .draggable({
-      helper: function() {
-        return $('<div></div>');
-      },
-      start: function(event) {
-        visflow.interaction.dragstartHandler({
-          type: 'port',
-          port: this,
-          event: event
-        });
-      }.bind(this),
-      drag: function(event) {
-        visflow.interaction.dragmoveHandler({
-          type: 'port',
-          port: this,
-          event: event
-        });
-      }.bind(this),
-      stop: function(event) {
-        visflow.interaction.dragstopHandler({
-          type: 'port',
-          event: event
-        });
-      }.bind(this)
-    })
-    .droppable({
-      hoverClass: 'hover',
-      tolerance: 'pointer',
-      accept: this.isInput ? '.port.right' : '.port.left',
-      greedy: true,
-      drop: function(event) {
-        visflow.interaction.dropHandler({
-          type: 'port',
-          port: this,
-          event: event
-        });
-      }.bind(this)
-    });
+    }.bind(this));
+
+  this.interactionDrag();
 };
 
 
@@ -358,7 +377,7 @@ visflow.Port.prototype.isEmpty = function() {
 
 /**
  * Gets the subset from the port. If the port does not produce a subset,
- * the method should panic (constant or generic).
+ * the method should panic.
  * @return {!visflow.Subset}
  */
 visflow.Port.prototype.getSubset = function() {

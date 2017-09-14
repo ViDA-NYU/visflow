@@ -55,3 +55,9 @@ visflow.const.QUEUE_DELAY = 10;
  * @const {number}
  */
 visflow.const.DATATABLE_WRAPPER_HEIGHT = 33 + 37 + 12;
+
+/**
+ * Class name for selected DataTable row.
+ * @type {string}
+ */
+visflow.const.DATATABLE_SELECTED = 'selected';

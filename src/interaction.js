@@ -350,9 +350,7 @@ visflow.interaction.keyPress = function(event) {
         case 'A':
           event.pageX = visflow.interaction.mouseX;
           event.pageY = visflow.interaction.mouseY;
-          if (!visflow.flow.visMode) {
-            visflow.popupPanel.show(event, true);
-          }
+          visflow.popupPanel.show(event, true);
           break;
         case 'shift+L':
           visflow.flow.autoLayoutAll();
@@ -411,6 +409,11 @@ visflow.interaction.mainContextMenu_ = function() {
     })
     .on('vf.flowSense', function() {
       visflow.nlp.input();
+    });
+  visflow.listen(contextMenu, visflow.Event.BEFORE_OPEN,
+    function(event, menuContainer) {
+      menuContainer.find('#addNode')
+        .toggleClass('disabled', !visflow.options.isDiagramEditable());
     });
 };
 

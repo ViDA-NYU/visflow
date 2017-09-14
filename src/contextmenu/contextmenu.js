@@ -89,7 +89,7 @@ visflow.ContextMenu.prototype.openMenu_ = function(event) {
       top: event.pageY
     });
   this.listItems_();
-  visflow.signal(this, 'beforeOpen', this.contextMenu_);
+  visflow.signal(this, visflow.Event.BEFORE_OPEN, this.contextMenu_);
 };
 
 /**

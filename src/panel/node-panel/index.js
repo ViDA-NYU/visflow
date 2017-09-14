@@ -41,7 +41,6 @@ visflow.nodePanel.init = function() {
   visflow.nodePanel.initUpdateHandlers_();
   // Set correct panel width on system init
   visflow.nodePanel.show_();
-  //setTimeout(visflow.nodePanel.hide_, visflow.nodePanel.INIT_DELAY_);
 };
 
 /**
@@ -50,7 +49,13 @@ visflow.nodePanel.init = function() {
  */
 visflow.nodePanel.initUpdateHandlers_ = function() {
   visflow.listen(visflow.flow, visflow.Event.VISMODE, function() {
-    visflow.nodePanel.updateVisMode_();
+    visflow.nodePanel.updateVisibility_();
+  });
+  // listen to D3M
+  visflow.listen(visflow.options, visflow.Event.CHANGE, function(event, data) {
+    if (data.type == visflow.Event.SHOW_D3M_PIPELINE) {
+      visflow.nodePanel.updateVisibility_();
+    }
   });
 };
 
@@ -212,9 +217,10 @@ visflow.nodePanel.initButton_ = function(button) {
 };
 
 /**
- * Shows/hides the node creation panel according to visMode on/off.
+ * Shows/hides the node creation panel according to visMode on/off and D3M
+ * pipeline on/off.
  * @private
  */
-visflow.nodePanel.updateVisMode_ = function() {
-  visflow.nodePanel.setVisible_(!visflow.flow.visMode);
+visflow.nodePanel.updateVisibility_ = function() {
+  visflow.nodePanel.setVisible_(visflow.options.isDiagramEditable());
 };

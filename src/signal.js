@@ -7,7 +7,11 @@ visflow.Event = {
   PROCESSED: 0,
   READY: 1,
   VISMODE: 2,
-  CHANGE: 3
+  CHANGE: 3,
+  EXPORT: 4,
+  EXPLORE: 5,
+  SHOW_D3M_PIPELINE: 100,
+  BEFORE_OPEN: 200
 };
 
 /**

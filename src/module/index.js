@@ -5,27 +5,22 @@
  */
 
 /**
- * @param {!Object} params
+ * @param {visflow.params.Node} params
  * @constructor
  * @abstract
  * @extends {visflow.ComputationNode}
  */
 visflow.Module = function(params) {
+  if (!params.ports) {
+    visflow.error('ports must be specified for visflow.Module');
+  }
   visflow.Module.base.constructor.call(this, params);
 
-  /** @inheritDoc */
-  this.ports = {
-    'in': new visflow.ComputationPort({
-      node: this,
-      id: 'in',
-      isInput: true
-    }),
-    'out': new visflow.ComputationPort({
-      node: this,
-      id: 'out',
-      isInput: false
-    })
-  };
+  /**
+   * Attempts to use ports passed from params.
+   * @type {!Object<!visflow.ComputationPort>}
+   */
+  this.ports = params.ports || {};
 };
 
 _.inherit(visflow.Module, visflow.ComputationNode);
@@ -67,22 +62,25 @@ visflow.Module.prototype.processAsync = function(endProcess) {
 /** @inheritDoc */
 visflow.Module.prototype.showDetails = function() {
   this.content.children().remove();
-  $('<div></div>').text(this.type).appendTo(this.content);
+  $('<div></div>').text(this.label).appendTo(this.content);
+};
+
+/**
+ * Checks whether the port with given id is subsetizable.
+ * @param {string} id
+ * @return {boolean}
+ */
+visflow.Module.prototype.hasPortSubset = function(id) {
+  return false;
 };
 
 /** @inheritDoc */
 visflow.Module.prototype.getPortSubset = function(id) {
-  if (this.getPort('in').connected()) {
-    var port = /** @type {!visflow.ComputationPort} */(this.getPort(id));
-    return port.pack;
-  } else {
-    // TODO(bowen): [test only] output a dummy table if no input exists.
-    var tabularData = visflow.parser.csv([
-      'a,b,c',
-      '33,1.25,xyz1',
-      '44,2.55,xyz2',
-      '55,3.75,xyz3'
-    ].join('\n'));
-    return new visflow.Subset(new visflow.Dataset(tabularData));
-  }
+  var tabularData = visflow.parser.csv([
+    'a,b,c',
+    '33,1.25,xyz1',
+    '44,2.55,xyz2',
+    '55,3.75,xyz3'
+  ].join('\n'));
+  return new visflow.Subset(new visflow.Dataset(tabularData));
 };

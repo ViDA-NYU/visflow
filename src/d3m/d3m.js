@@ -15,6 +15,12 @@ visflow.d3m.NEW_TASK_ = './dist/html/d3m/new-task.html';
  */
 visflow.d3m.sessionId = '';
 
+/**
+ * Id of the selected pipeline.
+ * @type {string}
+ */
+visflow.d3m.pipelineId = '';
+
 /** @private @const {number} */
 visflow.d3m.SOCKET_WAIT_INTERVAL_ = 1000;
 
@@ -82,10 +88,12 @@ visflow.d3m.socket.onmessage = function(event) {
     visflow.error(rid, 'not expected but received');
   }
 
-  // TODO(bowen): ask to send stream end message.
   switch (visflow.d3m.expects_[rid].fname) {
     case d3m.Rpc.START_SESSION:
       visflow.d3m.sessionId = res.context['session_id'];
+
+      // DEVEL(bowen)
+      //visflow.d3m.loadSession('session_21');
       break;
     case d3m.Rpc.CREATE_PIPELINES:
       var pipelineInfo = res['pipeline_info'];
@@ -118,6 +126,7 @@ visflow.d3m.socket.onmessage = function(event) {
     case d3m.Rpc.GET_EXECUTE_PIPELINE_RESULTS:
       break;
     case d3m.Rpc.DESCRIBE_DATAFLOW:
+      visflow.d3m.loadPipelineAsDiagram(/** @type {d3m.Dataflow} */(res));
       break;
     case d3m.Rpc.GET_DATAFLOW_RESULTS:
       break;
@@ -215,6 +224,15 @@ visflow.d3m.taskSelection_ = function(dialog, dataList) {
       {title: 'Metric', data: 'metric'},
       {title: 'Size', data: 'size'}
     ],
+    columnDefs: [
+      {
+        type: 'data-size',
+        render: function(size) {
+          return visflow.utils.fileSizeDisplay(size);
+        },
+        targets: 4
+      }
+    ],
     pageLength: 5,
     lengthMenu: [5, 10, 20],
     pagingType: 'full'
@@ -240,21 +258,33 @@ visflow.d3m.taskSelection_ = function(dialog, dataList) {
  */
 visflow.d3m.createPipelines = function(problem) {
   visflow.pipelinePanel.setTask(problem);
-  var request = {
+  visflow.d3m.sendMessage(d3m.Rpc.CREATE_PIPELINES, {
     'context': {
       'session_id': visflow.d3m.sessionId
     },
     'task': d3m.taskTypeToNumber(problem.schema.taskType),
     'task_subtype': problem.schema.taskSubtype ?
-        d3m.taskSubtypeToNumber(problem.schema.taskSubtype) :
-        d3m.TaskSubtype.NONE,
+      d3m.taskSubtypeToNumber(problem.schema.taskSubtype) :
+      d3m.TaskSubtype.NONE,
     'task_description': problem.schema.descriptionFile,
     'metrics': [d3m.metricToNumber(problem.schema.metric)],
     'target_features': [{
       'feature_id': problem.schema.target.field
     }]
-  };
-  visflow.d3m.sendMessage(d3m.Rpc.CREATE_PIPELINES, request);
+  });
+};
+
+/**
+ * Loads a session and its pipelines.
+ * @param {string} sessionId
+ */
+visflow.d3m.loadSession = function(sessionId) {
+  visflow.d3m.sessionId = sessionId;
+  visflow.d3m.sendMessage(d3m.Rpc.LIST_PIPELINES, {
+    'context': {
+      'session_id': sessionId
+    }
+  });
 };
 
 /**

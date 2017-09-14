@@ -28,8 +28,26 @@ visflow.ComputationPort = function(params) {
 
 _.inherit(visflow.ComputationPort, visflow.Port);
 
-/** @const {boolean} */
-visflow.ComputationPort.prototype.IS_COMPUTATION_PORT = true;
+
+/** @inheritDoc */
+visflow.ComputationPort.prototype.initContextMenu = function() {
+  var contextMenu = visflow.ComputationPort.base.initContextMenu.call(this);
+
+  visflow.listen(contextMenu, visflow.Event.EXPLORE, function() {
+    var subset = this.node.getPortSubset(this.id);
+    // TODO(bowen): visflow.upload.export(this.pack);
+  }.bind(this));
+  visflow.listen(contextMenu, visflow.Event.BEFORE_OPEN,
+    function(event, menuContainer) {
+    var explore = menuContainer.find('#explore');
+    if (!this.node.hasPortSubset(this.id)) {
+      explore.addClass('disabled');
+      explore.children('span').first().text('No Result for Display');
+    }
+  }.bind(this));
+
+  return contextMenu;
+};
 
 /** @inheritDoc */
 visflow.ComputationPort.prototype.setContainer = function(container) {
@@ -77,3 +95,10 @@ visflow.ComputationPort.prototype.onConnected = function(edge) {
   }
   edge.sourcePort.changed(true);
 };
+
+/**
+ * Overrides dragging interaction so that connections cannot be made on
+ * computation port.
+ * @inheritDoc
+ */
+visflow.ComputationPort.prototype.interactionDrag = function() {};

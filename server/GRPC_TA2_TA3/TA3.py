@@ -219,7 +219,7 @@ grpcCall = {
 
 class SocketHandler(websocket.WebSocketHandler):
     def __init__(self, *args, **kwargs):
-        websocket.WebSocketHandler.__init__(*args, **kwargs)
+        websocket.WebSocketHandler.__init__(self, *args, **kwargs)
         self._thread_pool = futures.ThreadPoolExecutor(max_workers=10)
 
     def check_origin(self, origin):

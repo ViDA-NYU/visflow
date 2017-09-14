@@ -132,3 +132,32 @@ d3m.Score;
  * }}
  */
 d3m.Pipeline;
+
+/**
+ * @typedef {{
+ *   id: string,
+ *   label: string,
+ *   type: string
+ * }}
+ */
+d3m.Module;
+
+
+/**
+ * @typedef {{
+ *   from_module_id: string,
+ *   from_output_name: string,
+ *   to_module_id: string,
+ *   to_input_name: string
+ * }}
+ */
+d3m.Connection;
+
+/**
+ * @typedef {{
+ *   pipeline_id: string,
+ *   modules: !Array<d3m.Module>,
+ *   connections: !Array<d3m.Connection>
+ * }}
+ */
+d3m.Dataflow;

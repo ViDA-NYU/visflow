@@ -8,15 +8,15 @@
  * assumed to be uppercase with underscores (like the enums above).
  * @param {!Object} enumDict
  * @param {string} str
- * @param {function(string): string|undefined} convert Function that maps key
+ * @param {(function(string):string)=} opt_convert Function that maps key
  *     to its "natural" form. If not given, it will convert "UPPER_CASE" to
  *     "upperCase".
  * @return {number|string|null} null if str does not exists in enumDict.
  * @private
  */
-d3m.enumKeyToNumber_ = function(enumDict, str, convert) {
+d3m.enumKeyToNumber_ = function(enumDict, str, opt_convert) {
   for (var key in enumDict) {
-    var convertedKey = convert ? convert(key) :
+    var convertedKey = opt_convert ? opt_convert(key) :
       $.camelCase(key.toLowerCase().replace('_', '-'));
     if (convertedKey == str) {
       return enumDict[key];
@@ -31,16 +31,16 @@ d3m.enumKeyToNumber_ = function(enumDict, str, convert) {
  * assumed to be uppercase with underscores (like the enums above).
  * @param {!Object} enumDict
  * @param {string|number} num
- * @param {function(string): string|undefined} convert Function that maps key
+ * @param {(function(string):string)=} opt_convert Function that maps key
  *     to its "natural" form. If not given, it will convert "UPPER_CASE" to
  *     "upperCase".
  * @return {?string} null if num is not present in the enum.
  * @private
  */
-d3m.enumNumberToKey_ = function(enumDict, num, convert) {
+d3m.enumNumberToKey_ = function(enumDict, num, opt_convert) {
   for (var key in enumDict) {
     if (enumDict[key] == +num) {
-      return convert ? convert(key) :
+      return opt_convert ? opt_convert(key) :
           $.camelCase(key.toLowerCase().replace('_', '-'));
     }
   }

@@ -42,7 +42,7 @@ visflow.pipelinePanel.TEMPLATE_ =
 /** @private {!jQuery} */
 visflow.pipelinePanel.tableTemplate_ = $();
 
-/** @private {?DataTable} */
+/** @private {?DataTables} */
 visflow.pipelinePanel.dataTable_ = null;
 
 /** @private @const {number} */
@@ -111,7 +111,9 @@ visflow.pipelinePanel.initPanel_ = function() {
     })
     .draggable()
     .resize(visflow.pipelinePanel.resize_);
-  visflow.pipelinePanel.tableTemplate_ = container.find('table').clone();
+  if (!visflow.pipelinePanel.tableTemplate_.length) {
+    visflow.pipelinePanel.tableTemplate_ = container.find('table').clone();
+  }
   visflow.pipelinePanel.update();
 };
 
@@ -123,7 +125,7 @@ visflow.pipelinePanel.update = function() {
   /**
    * Pipeline id to object of metric scores. Metric score is from metric enum
    * to score values.
-   * @type {!Object<!Object<d3m.Metric, number>>}
+   * @type {!Object<!Object<number>>}
    */
   var pipelineMetrics = {};
   visflow.d3m.pipelines.forEach(function(pipeline) {
@@ -146,7 +148,7 @@ visflow.pipelinePanel.update = function() {
         d3m.enumToText(d3m.Progress, pipeline.progress) : 'N/A'
     };
     for (var metric in metrics) {
-      row['score' + metric] = pipelineMetrics[pipeline.id][metric] || 'N/A';
+      row['score' + metric] = pipelineMetrics[pipeline.id][+metric] || 'N/A';
     }
     return row;
   });
@@ -166,7 +168,7 @@ visflow.pipelinePanel.update = function() {
   for (var metric in metrics) {
     columns.push({
       title: visflow.utils.uppercaseFirstLetter(
-          d3m.enumToText(d3m.Metric, metric)),
+          /** @type {string} */(d3m.enumToText(d3m.Metric, +metric))),
       data: 'score' + metric
     });
   }
@@ -174,7 +176,10 @@ visflow.pipelinePanel.update = function() {
   var table = container.find('table');
   var dt = table.DataTable({
     data: pipelines,
-    select: 'single',
+    select: {
+      style: 'single',
+      info: false
+    },
     columns: columns,
     pageLength: 5,
     lengthMenu: false,
@@ -182,14 +187,45 @@ visflow.pipelinePanel.update = function() {
     scrollX: true,
     searching: false,
     lengthChange: false,
+    createdRow: function(row, data) {
+      $(row).toggleClass(visflow.const.DATATABLE_SELECTED,
+        data.id == visflow.d3m.pipelineId);
+    },
     initComplete: function() {
       visflow.pipelinePanel.resize_();
     }
   });
 
+  /**
+   * Hack: didn't find a way to stop the deselect event.
+   * Clears selected styles for all rows and add selected style for the selected
+   * row.
+   */
+  var highlightSelectedPipeline = function() {
+    var unselected = [];
+    var selected = -1;
+    visflow.d3m.pipelines.forEach(function(pipeline, index) {
+      if (pipeline.id == visflow.d3m.pipelineId) {
+        selected = index;
+      } else {
+        unselected.push(index);
+      }
+    });
+    $(visflow.pipelinePanel.dataTable_.rows(unselected).nodes())
+      .removeClass(visflow.const.DATATABLE_SELECTED);
+    $(visflow.pipelinePanel.dataTable_.row(selected).node())
+      .addClass(visflow.const.DATATABLE_SELECTED);
+  };
+
   dt.on('select.dt', function(event, dt, type, tableIndices) {
     var pipeline = dt.row(tableIndices[0]).data();
-    visflow.d3m.loadPipeline(pipeline.id);
+    if (pipeline.id != visflow.d3m.pipelineId) {
+      visflow.d3m.loadPipeline(pipeline.id);
+      visflow.d3m.pipelineId = pipeline.id;
+    }
+    highlightSelectedPipeline();
+  }).on('deselect.dt', function() {
+    highlightSelectedPipeline();
   });
   visflow.pipelinePanel.dataTable_ = dt;
 };

@@ -126,13 +126,24 @@ visflow.menu.initUpdateHandlers_ = function() {
 
       navbar.find('#save, #load').addClass('disabled');
     });
+
+  visflow.listen(visflow.options, visflow.Event.CHANGE, function(event, data) {
+    if (data.type == visflow.Event.SHOW_D3M_PIPELINE) {
+      visflow.menu.updateVisibility_();
+    }
+  });
 };
 
 /**
- * Updates the enabled/disabled state of the add node item in the menu.
+ * Updates the enabled/disabled state of the menu items.
+ * @private
  */
-visflow.menu.updateVisMode = function() {
+visflow.menu.updateVisibility_ = function() {
   var navbar = $('.visflow > .navbar-fixed-top');
+
+  var diagramEditingDisabled = !visflow.options.isDiagramEditable();
   var addNode = navbar.find('#add-node');
-  addNode.toggleClass('disabled', visflow.flow.visMode);
+  addNode.toggleClass('disabled', diagramEditingDisabled);
+  var showNodePanel = navbar.find('#show-node-panel');
+  showNodePanel.toggleClass('disabled', diagramEditingDisabled);
 };

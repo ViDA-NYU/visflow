@@ -52,6 +52,9 @@ visflow.view.initListeners_ = function(view) {
         view.find('#show-node-label > i').toggleClass('glyphicon-ok', value);
         visflow.flow.updateNodeLabels();
         break;
+      case visflow.Event.SHOW_D3M_PIPELINE:
+        view.find('#show-node-panel > i').toggleClass('glyphicon-ok', !value);
+        break;
     }
   });
 };
