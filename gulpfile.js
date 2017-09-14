@@ -29,10 +29,10 @@ gulp.task('watch-doc', function() {
   ], ['build-doc']);
 });
 
-// Dev d3m. Build without code minification.
+// Dev task. Build without code minification.
 gulp.task('dev', ['lint', 'build-dev', 'build-doc']);
 
-// Default d3m. Build with code minification.
+// Default task. Build with code minification.
 gulp.task('default', ['lint', 'build', 'build-doc']);
 
 // Do everything.

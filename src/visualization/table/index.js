@@ -131,7 +131,7 @@ visflow.Table.prototype.showDetails = function() {
       lengthMenu: [5, 10, 20, 50, 100],
       createdRow: function(row, data) {
         if (data[0] in this.selected) {
-          $(row).addClass('selected');
+          $(row).addClass('sel');
         }
       }.bind(this),
       initComplete: function() {
