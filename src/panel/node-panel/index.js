@@ -38,7 +38,8 @@ visflow.nodePanel.init = function() {
   visflow.nodePanel.container_ = container;
   visflow.nodePanel.hoverArea_ = container.children('.hover-area');
 
-  visflow.nodePanel.initUpdateHandlers_();
+  visflow.nodePanel.initEventListeners_();
+
   // Set correct panel width on system init
   visflow.nodePanel.show_();
 };
@@ -47,16 +48,9 @@ visflow.nodePanel.init = function() {
  * Creates event listeners for system events.
  * @private
  */
-visflow.nodePanel.initUpdateHandlers_ = function() {
-  visflow.listen(visflow.flow, visflow.Event.VISMODE, function() {
-    visflow.nodePanel.updateVisibility_();
-  });
-  // listen to D3M
-  visflow.listen(visflow.options, visflow.Event.CHANGE, function(event, data) {
-    if (data.type == visflow.Event.SHOW_D3M_PIPELINE) {
-      visflow.nodePanel.updateVisibility_();
-    }
-  });
+visflow.nodePanel.initEventListeners_ = function() {
+  visflow.listen(visflow.options, visflow.Event.DIAGRAM_EDITABLE,
+    visflow.nodePanel.updateVisibility_);
 };
 
 /**
@@ -81,7 +75,6 @@ visflow.nodePanel.toggle = function(opt_state) {
     } else {
       visflow.nodePanel.hide_();
     }
-    visflow.signal(visflow.nodePanel, visflow.Event.CHANGE, newState);
   }
 };
 
@@ -217,8 +210,7 @@ visflow.nodePanel.initButton_ = function(button) {
 };
 
 /**
- * Shows/hides the node creation panel according to visMode on/off and D3M
- * pipeline on/off.
+ * Shows/hides the node creation panel.
  * @private
  */
 visflow.nodePanel.updateVisibility_ = function() {

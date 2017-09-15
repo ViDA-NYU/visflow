@@ -350,7 +350,9 @@ visflow.interaction.keyPress = function(event) {
         case 'A':
           event.pageX = visflow.interaction.mouseX;
           event.pageY = visflow.interaction.mouseY;
-          visflow.popupPanel.show(event, true);
+          if (visflow.options.isDiagramEditable()) {
+            visflow.popupPanel.show(event, true);
+          }
           break;
         case 'shift+L':
           visflow.flow.autoLayoutAll();
@@ -363,7 +365,7 @@ visflow.interaction.keyPress = function(event) {
           break;
         */
         case 'shift+V':
-          visflow.flow.toggleVisMode();
+          visflow.options.toggleVisMode();
           break;
         case 'shift+T':
           visflow.nlp.toggleSpeech();

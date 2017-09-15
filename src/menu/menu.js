@@ -24,7 +24,7 @@ visflow.menu.init = function() {
   visflow.menu.initUserButtons_();
   visflow.menu.initTooltips_();
 
-  visflow.menu.initUpdateHandlers_();
+  visflow.menu.initEventListeners_();
 };
 
 /**
@@ -107,7 +107,7 @@ visflow.menu.initTooltips_ = function() {
  * Initializes the update event handlers for events across systems.
  * @private
  */
-visflow.menu.initUpdateHandlers_ = function() {
+visflow.menu.initEventListeners_ = function() {
   var navbar = $('.visflow > .navbar-fixed-top');
   visflow.listenMany(visflow.user, [
     {
@@ -128,28 +128,23 @@ visflow.menu.initUpdateHandlers_ = function() {
       callback: function() {
         navbar.find('.logged-out').show();
         navbar.find('.logged-in').hide();
+
         navbar.find('#save, #load').addClass('disabled');
       }
     }
   ]);
 
-  visflow.listen(visflow.options, visflow.Event.CHANGE, function(event, data) {
-    if (data.type == visflow.Event.SHOW_D3M_PIPELINE) {
-      visflow.menu.updateVisibility_();
-    }
-  });
+  visflow.listen(visflow.options, visflow.Event.DIAGRAM_EDITABLE,
+    visflow.menu.diagramEditableChanged_);
 };
 
 /**
- * Updates the enabled/disabled state of the menu items.
+ * Updates the enabled/disabled state of the add node item in the menu.
  * @private
  */
-visflow.menu.updateVisibility_ = function() {
+visflow.menu.diagramEditableChanged_ = function() {
   var navbar = $('.visflow > .navbar-fixed-top');
 
-  var diagramEditingDisabled = !visflow.options.isDiagramEditable();
   var addNode = navbar.find('#add-node');
-  addNode.toggleClass('disabled', diagramEditingDisabled);
-  var showNodePanel = navbar.find('#show-node-panel');
-  showNodePanel.toggleClass('disabled', diagramEditingDisabled);
+  addNode.toggleClass('disabled', !visflow.options.isDiagramEditable());
 };
