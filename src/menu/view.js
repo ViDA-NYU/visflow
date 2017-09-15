@@ -18,10 +18,10 @@ visflow.view.initDropdown = function(navbar) {
     visflow.options.toggleNodeLabel(); // TODO(bowen): check visflow.options
   });
   view.find('#show-node-panel').click(function() {
-    visflow.nodePanel.toggle();
+    visflow.options.toggleNodePanel();
   });
 
-  visflow.view.initListeners_(view);
+  visflow.view.initEventListeners_(view);
 };
 
 /**
@@ -29,32 +29,27 @@ visflow.view.initDropdown = function(navbar) {
  * @param {!jQuery} view Menu view dropdown.
  * @private
  */
-visflow.view.initListeners_ = function(view) {
-  // update pipeline panel check mark
-  visflow.listen(visflow.pipelinePanel, visflow.Event.CHANGE,
-    function(event, value) {
-      view.find('#show-pipeline-panel > i').toggleClass('glyphicon-ok', value);
-    });
-
-  // update node panel check mark
-  visflow.listen(visflow.nodePanel, visflow.Event.CHANGE,
-    function(event, value) {
-      view.find('#show-node-panel > i').toggleClass('glyphicon-ok', value);
-    });
-
-  //  update node label check mark
-  visflow.listen(visflow.options, visflow.Event.CHANGE, function(event, data) {
-    // Here we need to parse data.value and data.type is because visflow.options
-    // may fire different types of option changes.
-    var value = data.value;
-    switch (data.type) {
-      case 'nodeLabel':
-        view.find('#show-node-label > i').toggleClass('glyphicon-ok', value);
-        visflow.flow.updateNodeLabels();
-        break;
-      case visflow.Event.SHOW_D3M_PIPELINE:
-        view.find('#show-node-panel > i').toggleClass('glyphicon-ok', !value);
-        break;
+visflow.view.initEventListeners_ = function(view) {
+  // Change "show-node-panel" button visibility.
+  visflow.listenMany(visflow.options, [
+    {
+      event: visflow.Event.DIAGRAM_EDITABLE,
+      callback: function() {
+        view.find('#show-node-panel')
+          .toggleClass('disabled', !visflow.options.isDiagramEditable());
+      }
+    },
+    {
+      event: visflow.Event.NODE_PANEL,
+      callback: function(event, value) {
+        view.find('#show-node-panel > i').toggleClass('glyphicon-ok', value);
+      }
     }
-  });
+  ]);
+  // Change "show-node-label" button visibility.
+  visflow.listen(visflow.options, visflow.Event.NODE_LABEL,
+    function(event, value) {
+      view.find('#show-node-label > i').toggleClass('glyphicon-ok', value);
+      visflow.flow.updateNodeLabels();
+    });
 };

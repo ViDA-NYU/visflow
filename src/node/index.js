@@ -324,8 +324,10 @@ visflow.Node.prototype.updateContainer_ = function() {
       .addClass('details')
       .removeClass('minimized')
       .css({
-        width: visflow.flow.visMode ? this.visCss.width : this.css.width,
-        height: visflow.flow.visMode ? this.visCss.height : this.css.height
+        width: visflow.options.isInVisMode() ?
+          this.visCss.width : this.css.width,
+        height: visflow.options.isInVisMode() ?
+          this.visCss.height : this.css.height
       });
 
     if (this.RESIZABLE) {
@@ -348,7 +350,7 @@ visflow.Node.prototype.show = function() {
   this.updateContainer_();
   this.updateContent();
 
-  if (!visflow.flow.visMode) {
+  if (!visflow.options.isInVisMode()) {
     // Not show edges with vismode on.
     this.showPorts();
     this.updatePorts();
@@ -620,7 +622,7 @@ visflow.Node.prototype.initContextMenu = function() {
         check.toggleClass('glyphicon-ok', this.options[item.bind]);
       }
     }, this);
-    if (visflow.flow.visMode) {
+    if (visflow.options.isInVisMode()) {
       minimize.hide();
     }
   }.bind(this);
@@ -915,7 +917,7 @@ visflow.Node.prototype.endProcess_ = function() {
 
   // Signals that the node has completed process(). This is to notify other
   // downflow nodes to update based on its new output.
-  visflow.signal(this, visflow.Event.PROCESSED, {node: this});
+  visflow.signal(this, visflow.Event.PROCESSED, this);
 
   this.hideMessage(visflow.Node.Message.PROCESSING);
 };
@@ -929,8 +931,9 @@ visflow.Node.prototype.wait = function() {
 
 /**
  * Saves the current css specification into 'this.css' or 'this.visCss'.
+ * @param {boolean=} opt_toVisCss
  */
-visflow.Node.prototype.saveCss = function() {
+visflow.Node.prototype.saveCss = function(opt_toVisCss) {
   var css = {
     left: this.container.position().left,
     top: this.container.position().top
@@ -943,18 +946,18 @@ visflow.Node.prototype.saveCss = function() {
       height: this.container.height()
     });
   }
-  if (!visflow.flow.visMode) {
-    _.extend(this.css, css);
-  } else {
-    _.extend(this.visCss, css);
+  var toVisCss = visflow.options.isInVisMode();
+  if (opt_toVisCss != undefined) {
+    toVisCss = opt_toVisCss;
   }
+  _.extend(toVisCss ? this.visCss : this.css, css);
 };
 
 /**
  * Applies css specification.
  */
 visflow.Node.prototype.loadCss = function() {
-  if (!visflow.flow.visMode) {
+  if (!visflow.options.isInVisMode()) {
     this.container.css(this.css);
   } else {
     this.container.css(this.visCss);
@@ -1051,7 +1054,7 @@ visflow.Node.prototype.toggleLabel = function() {
  * Handles node resize.
  */
 visflow.Node.prototype.resize = function() {
-  if (visflow.flow.visMode == false) {
+  if (!visflow.options.isInVisMode()) {
     this.updatePorts();
   }
 };
@@ -1143,7 +1146,7 @@ visflow.Node.prototype.initPanelHeader = function(container) {
     }.bind(this));
 
   // Handle header button clicks.
-  if (!visflow.flow.visMode) {
+  if (!visflow.options.isInVisMode()) {
     var btnMinimized = header.find('#minimized').show();
     btnMinimized.click(function() {
         this.toggleMinimized();
@@ -1488,7 +1491,7 @@ visflow.Node.prototype.flowSenseInput = function() {
  */
 visflow.Node.prototype.animateToVisModeOn = function() {
   this.container.stop(true, true);
-  this.saveCss();
+  this.saveCss(false);
 
   if (this.options.visMode) {
     this.container
@@ -1514,7 +1517,7 @@ visflow.Node.prototype.animateToVisModeOn = function() {
  */
 visflow.Node.prototype.animateToVisModeOff = function() {
   this.container.stop(true, true);
-  this.saveCss();
+  this.saveCss(true);
 
   if (this.options.visMode) {
     var css = this.css;
