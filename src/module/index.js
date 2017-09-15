@@ -37,6 +37,7 @@ visflow.Module.prototype.init = function() {
  */
 visflow.Module.prototype.serialize = function() {
   var result = visflow.Module.base.serialize.call(this);
+  result.ports = this.ports;
   return result;
 };
 
@@ -54,7 +55,6 @@ visflow.Module.prototype.processAsync = function(endProcess) {
   var inPort = this.getPort('in');
   var outPort = this.getPort('out');
   outPort.pack.copy(inPort.pack, true);
-  console.log(inPort.pack);
   outPort.changed(true);
   endProcess();
 };
@@ -71,6 +71,10 @@ visflow.Module.prototype.showDetails = function() {
  * @return {boolean}
  */
 visflow.Module.prototype.hasPortSubset = function(id) {
+  // DEVEL(bowen)
+  if (this.label == 'Linear SVM') {
+    return true;
+  }
   return false;
 };
 

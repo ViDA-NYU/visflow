@@ -31,6 +31,7 @@ visflow.Event = {
   OPENED: 24,
   DELETE: 25,
   EXPLORE: 26,
+  SUBSET_FLOW: 27,
   FLOWSENSE: 1000,
   SHOW_D3M_PIPELINE: 2000
 };

@@ -53,7 +53,7 @@ visflow.nodePanel.initUpdateHandlers_ = function() {
   });
   // listen to D3M
   visflow.listen(visflow.options, visflow.Event.CHANGE, function(event, data) {
-    if (data.type == visflow.Event.SHOW_D3M_PIPELINE) {
+    if (data.type == visflow.Event.SUBSET_FLOW) {
       visflow.nodePanel.updateVisibility_();
     }
   });

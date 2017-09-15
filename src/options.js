@@ -15,7 +15,13 @@ visflow.options.nodeLabel = true;
  * Whether the currently loaded diagram is a D3M piepline.
  * @type {boolean}
  */
-visflow.options.showingD3MPipeline = false;
+visflow.options.showingD3MPipeline = true;
+
+/**
+ * Whether the current mode is subset flow.
+ * @type {boolean}
+ */
+visflow.options.isSubsetFlow = false;
 
 /**
  * Toggles or sets the node label visibility.
@@ -37,13 +43,8 @@ visflow.options.toggleNodeLabel = function(opt_state) {
  * @param {boolean} state
  */
 visflow.options.toggleD3MPipeline = function(state) {
-  if (state != visflow.options.showingD3MPipeline) {
-    visflow.options.showingD3MPipeline = state;
-  }
-  visflow.signal(visflow.options, visflow.Event.CHANGE, {
-    type: visflow.Event.SHOW_D3M_PIPELINE,
-    value: state
-  });
+  visflow.options.showingD3MPipeline = state;
+  visflow.options.updateSubsetFlow_();
 };
 
 /**
@@ -52,4 +53,15 @@ visflow.options.toggleD3MPipeline = function(state) {
  */
 visflow.options.isDiagramEditable = function() {
   return !visflow.flow.visMode && !visflow.options.showingD3MPipeline;
+};
+
+/**
+ * Updates subset flow state.
+ * @private
+ */
+visflow.options.updateSubsetFlow_ = function() {
+  var newState = !visflow.flow.visMode &&
+    !visflow.options.showingD3MPipeline;
+  visflow.options.isSubsetFlow = newState;
+  visflow.signal(visflow.options, visflow.Event.SUBSET_FLOW, newState);
 };

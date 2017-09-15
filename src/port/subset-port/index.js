@@ -91,8 +91,9 @@ visflow.SubsetPort.prototype.interaction = function() {
   this.container
     .dblclick(function() {
       this.info();
-      // For debugging.
-      console.log(this.pack, this);
+      // DEBUG(bowen)
+      visflow.debug = this.node;
+      console.log('[port]', this.pack, this);
     }.bind(this));
 };
 

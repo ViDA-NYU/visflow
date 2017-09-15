@@ -80,10 +80,10 @@ visflow.ComputationPort.prototype.getSubset = function() {
 
 /** @inheritDoc */
 visflow.ComputationPort.prototype.info = function() {
-  var subset = this.getSubset();
-  if (subset == null) {
+  if (!this.node.hasPortSubset(this.id)) {
     return 'generic data';
   }
+  var subset = this.getSubset();
   return '(' + subset.count() + ' items)';
 };
 

@@ -27,6 +27,8 @@ visflow.init = function() {
 
   visflow.user.init();
   visflow.d3m.init();
+
+  visflow.options.toggleD3MPipeline(true);
 };
 
 /**

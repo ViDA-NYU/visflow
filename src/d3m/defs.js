@@ -95,6 +95,14 @@ d3m.TaskSubtype = {
   NONOVERLAPPING: 8
 };
 
+/** @enum {number} */
+d3m.DataflowStatus = {
+  PENDING: 0,
+  RUNNING: 1,
+  DONE: 2,
+  ERROR: 3
+};
+
 /**
  * Dataset descriptor returned by list-d3m-data.php.
  * @typedef {{
@@ -161,3 +169,22 @@ d3m.Connection;
  * }}
  */
 d3m.Dataflow;
+
+/**
+ * @typedef {{
+ *   output_name: string,
+ *   value: string
+ * }}
+ */
+d3m.ModuleOutput;
+
+/**
+ * @typedef {{
+ *   module_id: string,
+ *   status: d3m.DataflowStatus,
+ *   progress: number,
+ *   outputs: !Array<d3m.ModuleOutput>,
+ *   execution_time: number
+ * }}
+ */
+d3m.ModuleResult;

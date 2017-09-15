@@ -134,7 +134,7 @@ visflow.menu.initUpdateHandlers_ = function() {
   ]);
 
   visflow.listen(visflow.options, visflow.Event.CHANGE, function(event, data) {
-    if (data.type == visflow.Event.SHOW_D3M_PIPELINE) {
+    if (data.type == visflow.Event.SUBSET_FLOW) {
       visflow.menu.updateVisibility_();
     }
   });

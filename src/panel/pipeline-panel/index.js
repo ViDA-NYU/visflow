@@ -56,6 +56,7 @@ visflow.pipelinePanel.INIT_DELAY_ = 50;
 visflow.pipelinePanel.init = function() {
   var container = $('#pipeline-panel');
   visflow.pipelinePanel.container_ = container;
+  visflow.pipelinePanel.initPanel_();
   visflow.pipelinePanel.show_();
 };
 
@@ -86,7 +87,7 @@ visflow.pipelinePanel.show_ = function() {
   content.load(visflow.pipelinePanel.TEMPLATE_, function() {
     visflow.pipelinePanel.container_.stop()
       .slideDown(visflow.pipelinePanel.TRANSITION_DURATION_,
-        visflow.pipelinePanel.initPanel_);
+        visflow.pipelinePanel.update);
   });
 };
 
@@ -114,7 +115,6 @@ visflow.pipelinePanel.initPanel_ = function() {
   if (!visflow.pipelinePanel.tableTemplate_.length) {
     visflow.pipelinePanel.tableTemplate_ = container.find('table').clone();
   }
-  visflow.pipelinePanel.update();
 };
 
 /**

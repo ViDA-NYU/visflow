@@ -129,6 +129,7 @@ visflow.d3m.socket.onmessage = function(event) {
       visflow.d3m.loadPipelineAsDiagram(/** @type {d3m.Dataflow} */(res));
       break;
     case d3m.Rpc.GET_DATAFLOW_RESULTS:
+      visflow.d3m.updatePipelineResults(/** @type {d3m.ModuleResult} */(res));
       break;
     default:
       visflow.error('unrecognized response from D3M socket');
@@ -143,6 +144,7 @@ visflow.d3m.init = function() {
   window.onbeforeunload = function() {
     visflow.d3m.endSession();
   };
+  visflow.d3m.initEventListeners_();
 };
 
 /**
@@ -258,6 +260,7 @@ visflow.d3m.taskSelection_ = function(dialog, dataList) {
  */
 visflow.d3m.createPipelines = function(problem) {
   visflow.pipelinePanel.setTask(problem);
+
   visflow.d3m.sendMessage(d3m.Rpc.CREATE_PIPELINES, {
     'context': {
       'session_id': visflow.d3m.sessionId
@@ -293,10 +296,35 @@ visflow.d3m.loadSession = function(sessionId) {
  */
 visflow.d3m.loadPipeline = function(pipelineId) {
   console.log('load pipeline', pipelineId);
+
   visflow.d3m.sendMessage(d3m.Rpc.DESCRIBE_DATAFLOW, {
     'context': {
       'session_id': visflow.d3m.sessionId
     },
     'pipeline_id': pipelineId
   });
+
+  visflow.d3m.sendMessage(d3m.Rpc.GET_DATAFLOW_RESULTS, {
+    'context': {
+      'session_id': visflow.d3m.sessionId
+    },
+    'pipeline_id': pipelineId
+  });
+};
+
+/**
+ * Updates the newest pipeline results.
+ * @param {d3m.ModuleResult} result
+ */
+visflow.d3m.updatePipelineResults = function(result) {
+  // TODO(bowen)
+};
+
+/**
+ * Initializes event listeners for D3M related options.
+ * @private
+ */
+visflow.d3m.initEventListeners_ = function() {
+  visflow.
+
 };
