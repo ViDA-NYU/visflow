@@ -62,6 +62,7 @@ visflow.d3m.loadPipelineAsDiagram = function(pipeline) {
     }
 
     var node = visflow.flow.createNode('module', {
+      id: module.id,
       ports: ports,
       onReady: onNodeReady
     });

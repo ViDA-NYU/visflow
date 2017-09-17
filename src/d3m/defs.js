@@ -96,7 +96,7 @@ d3m.TaskSubtype = {
 };
 
 /** @enum {number} */
-d3m.DataflowStatus = {
+d3m.ModuleStatus = {
   PENDING: 0,
   RUNNING: 1,
   DONE: 2,

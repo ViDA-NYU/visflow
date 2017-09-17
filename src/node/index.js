@@ -1561,3 +1561,26 @@ visflow.Node.prototype.focusScore = function() {
 
   return this.activeness + visflow.Node.FOCUS_ALPHA * dFactor;
 };
+
+/**
+ * Sets the progress bar to a percentange.
+ * @param {number} percent Between 0 and 1.
+ */
+visflow.Node.prototype.setProgress = function(percent) {
+  this.container.find('.progress > .progress-bar')
+    .css('width', (percent * 100) + '%');
+};
+
+/**
+ * Shows the node's progress bar.
+ */
+visflow.Node.prototype.showProgress = function() {
+  this.container.children('.progress').show();
+};
+
+/**
+ * Hides the node's progress bar.
+ */
+visflow.Node.prototype.hideProgress = function() {
+  this.container.children('.progress').hide();
+};

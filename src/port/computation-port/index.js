@@ -34,9 +34,11 @@ visflow.ComputationPort.prototype.initContextMenu = function() {
   var contextMenu = visflow.ComputationPort.base.initContextMenu.call(this);
 
   visflow.listen(contextMenu, visflow.Event.EXPLORE, function() {
+    // If the port can trigger EXPLORE, then it must be subsetizable.
     var subset = this.node.getPortSubset(this.id);
-    // TODO(bowen): visflow.upload.export(this.pack);
+    console.log('hi');
   }.bind(this));
+
   visflow.listen(contextMenu, visflow.Event.BEFORE_OPEN,
     function(event, menuContainer) {
     var explore = menuContainer.find('#explore');
@@ -52,7 +54,7 @@ visflow.ComputationPort.prototype.initContextMenu = function() {
 /** @inheritDoc */
 visflow.ComputationPort.prototype.setContainer = function(container) {
   visflow.ComputationPort.base.setContainer.call(this, container);
-  container.find('.port-icon').addClass('computation');
+  this.container.addClass('computation');
 };
 
 /** @inheritDoc */

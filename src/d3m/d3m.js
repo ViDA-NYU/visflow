@@ -259,6 +259,9 @@ visflow.d3m.taskSelection_ = function(dialog, dataList) {
  * @param {d3m.Dataset} problem
  */
 visflow.d3m.createPipelines = function(problem) {
+  // Clear previous pipelines.
+  visflow.d3m.reset();
+
   visflow.pipelinePanel.setTask(problem);
 
   visflow.d3m.sendMessage(d3m.Rpc.CREATE_PIPELINES, {
@@ -317,7 +320,15 @@ visflow.d3m.loadPipeline = function(pipelineId) {
  * @param {d3m.ModuleResult} result
  */
 visflow.d3m.updatePipelineResults = function(result) {
-  // TODO(bowen)
+  var node = visflow.flow.getNode(result['module_id']);
+  if (result.status != d3m.ModuleStatus.DONE) {
+    node.showProgress(0);
+  } else {
+    node.hideProgress();
+  }
+  if (result.progress != undefined) {
+    node.setProgress(result.progress);
+  }
 };
 
 /**
@@ -325,6 +336,14 @@ visflow.d3m.updatePipelineResults = function(result) {
  * @private
  */
 visflow.d3m.initEventListeners_ = function() {
-  visflow.
+};
 
+/**
+ * Resets the d3m pipelines.
+ */
+visflow.d3m.reset = function() {
+  visflow.d3m.pipelines = [];
+  visflow.d3m.pipelineId = '';
+  visflow.flow.clearFlow();
+  visflow.pipelinePanel.update();
 };

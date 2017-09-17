@@ -65,14 +65,10 @@ visflow.Module.prototype.showDetails = function() {
   $('<div></div>').text(this.label).appendTo(this.content);
 };
 
-/**
- * Checks whether the port with given id is subsetizable.
- * @param {string} id
- * @return {boolean}
- */
+/** @inheritDoc */
 visflow.Module.prototype.hasPortSubset = function(id) {
   // DEVEL(bowen)
-  if (this.label == 'Linear SVM') {
+  if (this.label == 'Linear SVM' && !this.getPort(id).isInput) {
     return true;
   }
   return false;

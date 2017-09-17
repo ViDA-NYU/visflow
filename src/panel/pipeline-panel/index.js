@@ -56,8 +56,7 @@ visflow.pipelinePanel.INIT_DELAY_ = 50;
 visflow.pipelinePanel.init = function() {
   var container = $('#pipeline-panel');
   visflow.pipelinePanel.container_ = container;
-  visflow.pipelinePanel.initPanel_();
-  visflow.pipelinePanel.show_();
+  visflow.pipelinePanel.initPanel_(visflow.pipelinePanel.show_);
 };
 
 /**
@@ -74,7 +73,6 @@ visflow.pipelinePanel.toggle = function(opt_state) {
     } else {
       visflow.pipelinePanel.hide_();
     }
-    visflow.signal(visflow.pipelinePanel, visflow.Event.CHANGE, newState);
   }
 };
 
@@ -83,12 +81,9 @@ visflow.pipelinePanel.toggle = function(opt_state) {
  * @private
  */
 visflow.pipelinePanel.show_ = function() {
-  var content = visflow.pipelinePanel.container_.find('.content');
-  content.load(visflow.pipelinePanel.TEMPLATE_, function() {
-    visflow.pipelinePanel.container_.stop()
-      .slideDown(visflow.pipelinePanel.TRANSITION_DURATION_,
-        visflow.pipelinePanel.update);
-  });
+  visflow.pipelinePanel.container_.stop()
+    .slideDown(visflow.pipelinePanel.TRANSITION_DURATION_,
+      visflow.pipelinePanel.update);
 };
 
 /**
@@ -102,19 +97,23 @@ visflow.pipelinePanel.hide_ = function() {
 
 /**
  * Initializes pipeline panel interaction.
+ * @param {Function=} opt_callback Callback after panel HTML is loaded.
  * @private
  */
-visflow.pipelinePanel.initPanel_ = function() {
-  var container = $(visflow.pipelinePanel.container_);
-  container
+visflow.pipelinePanel.initPanel_ = function(opt_callback) {
+  var container = $(visflow.pipelinePanel.container_)
     .resizable({
       maxHeight: visflow.pipelinePanel.MAX_HEIGHT_
     })
     .draggable()
     .resize(visflow.pipelinePanel.resize_);
-  if (!visflow.pipelinePanel.tableTemplate_.length) {
+  var content = container.find('.content');
+  content.load(visflow.pipelinePanel.TEMPLATE_, function() {
     visflow.pipelinePanel.tableTemplate_ = container.find('table').clone();
-  }
+    if (opt_callback) {
+      opt_callback();
+    }
+  });
 };
 
 /**
