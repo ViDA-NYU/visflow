@@ -15,6 +15,7 @@ visflow.Event = {
   DIAGRAM_EDITABLE: 6,
   NODE_LABEL: 7,
   NODE_PANEL: 8,
+  EXECUTE: 9,
 
   // node states
   PROCESSED: 100,
