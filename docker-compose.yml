@@ -1,0 +1,16 @@
+version: '3'
+services:
+ visflow:
+  build: .
+  ports: 
+   - '5000:5000'
+ database:
+  image: 'mysql/mysql-server:5.7' 
+  ports: 
+   - '3306:3306'
+  environment:
+   MYSQL_ROOT_PASSWORD: 'root'
+  volumes:
+   - database_volume:/var/lib/mysql 
+volumes:
+ database_volume:

@@ -12,7 +12,7 @@ RUN apt-get -qq update
 # installing build essentials and git
 RUN apt-get install -y build-essential git
 
-# installing java
+# installing java 8
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y  software-properties-common && \
@@ -27,15 +27,6 @@ RUN export DEBIAN_FRONTEND=noninteractive
 
 # install apache and wget
 RUN apt-get -y install wget curl unzip apache2 apache2-utils
-
-# install mySQL server
-RUN echo "mysql-server mysql-server/root_password password root" |  debconf-set-selections
-RUN echo "mysql-server mysql-server/root_password_again password root" |  debconf-set-selections
-RUN apt-get install -y mysql-server
-
-#RUN mysql_secure_installation
-
-
 
 # Installing Nodejs
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
@@ -76,5 +67,5 @@ RUN gulp build-doc
 # RUN ./init.sh
 
 
-# Make port 80 available to the world outside this container
-EXPOSE 80
+EXPOSE 3306
+CMD ["mysqld"]
