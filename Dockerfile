@@ -25,8 +25,9 @@ RUN apt-get update && \
 # avoid prompt messages
 RUN export DEBIAN_FRONTEND=noninteractive
 
-# install apache and wget
-RUN apt-get -y install wget curl unzip apache2 apache2-utils
+# install apache, wget and php
+RUN apt-get install wget curl unzip apache2 apache2-utils php7.0 php7.0-fpm php7.0-mysql -y
+ 
 
 # Installing Nodejs
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
@@ -34,7 +35,7 @@ RUN apt-get install -y nodejs
 
 
 # Installing mySQL client
-RUN apt-get install mysql-client
+RUN apt-get install mysql-client -y
 
 WORKDIR /visflow
 
@@ -59,13 +60,10 @@ RUN bower install
 RUN gulp build
 RUN gulp build-doc
 
+CMD ["/etc/init.d/apache2", "restart"]
 
 # Initializing the DB and the demo data and diagrams:
 # WORKDIR visflow
 # WORKDIR server
 # RUN mysql -u root -p < init-db.sql
 # RUN ./init.sh
-
-
-EXPOSE 3306
-CMD ["mysqld"]
