@@ -1,22 +1,26 @@
-# Installing lightweight linux Alpine
-FROM alpine:3.5
+# Installing ubuntu base
+FROM ubuntu:16.04
 
-# Set the working directory to /app
-WORKDIR /app
-
-# Copy the current directory contents into the container at /app
-ADD . /app
-
+LABEL maintainer="{jorgehpo, remi.rampin, yamuna, raonipd, bowen.yu}@nyu.edu"
 
 # Update apt-get local index
 RUN apt-get -qq update
 
 # installing apt-utils
-RUN apt-get install -y --no-install-recommends apt-utils
+# RUN apt-get install -y --no-install-recommends apt-utils
 
 # installing build essentials and git
 RUN apt-get install -y build-essential git
 
+# installing java
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y  software-properties-common && \
+    add-apt-repository ppa:webupd8team/java -y && \
+    apt-get update && \
+    echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections && \
+    apt-get install -y oracle-java8-installer && \
+    apt-get clean
 
 # avoid prompt messages
 RUN export DEBIAN_FRONTEND=noninteractive
@@ -29,6 +33,9 @@ RUN echo "mysql-server mysql-server/root_password password root" |  debconf-set-
 RUN echo "mysql-server mysql-server/root_password_again password root" |  debconf-set-selections
 RUN apt-get install -y mysql-server
 
+#RUN mysql_secure_installation
+
+
 
 # Installing Nodejs
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
@@ -37,6 +44,10 @@ RUN apt-get install -y nodejs
 
 # Installing mySQL client
 RUN apt-get install mysql-client
+
+WORKDIR /visflow
+
+ADD . /visflow
 
 
 
@@ -49,8 +60,6 @@ RUN npm install -g bower
 RUN echo '{ "allow_root": true }' > /root/.bowerrc
 
 
-WORKDIR visflow
-
 # Installing client dependencies
 RUN npm install
 RUN bower install
@@ -60,15 +69,12 @@ RUN gulp build
 RUN gulp build-doc
 
 
-WORKDIR /app
-
 # Initializing the DB and the demo data and diagrams:
-WORKDIR visflow
-WORKDIR server
-RUN mysql -u root -p < init-db.sql
-RUN ./init.sh
+# WORKDIR visflow
+# WORKDIR server
+# RUN mysql -u root -p < init-db.sql
+# RUN ./init.sh
 
-WORKDIR /app
 
 # Make port 80 available to the world outside this container
 EXPOSE 80
