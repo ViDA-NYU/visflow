@@ -40,8 +40,9 @@ visflow.upload.upload = function() {
 /**
  * Creates an upload dialog for the exported data.
  * @param {!visflow.Subset} pack
+ * @param {Function=} opt_callback Function to call when export is complete.
  */
-visflow.upload.export = function(pack) {
+visflow.upload.export = function(pack, opt_callback) {
   if (!visflow.user.writePermission()) {
     visflow.warning('you must login to export data');
     return;
@@ -52,7 +53,8 @@ visflow.upload.export = function(pack) {
       complete: visflow.upload.exportDialog_,
       params: {
         dataList: dataList,
-        pack: pack
+        pack: pack,
+        callback: opt_callback
       }
     });
   });
@@ -130,7 +132,8 @@ visflow.upload.upload_ = function(formParams) {
  *   dataList: !Array<visflow.data.ListInfo>,
  *   data: (string|undefined),
  *   defaultDataName: (string|undefined),
- *   defaultFileName: (string|undefined)
+ *   defaultFileName: (string|undefined),
+ *   callback: (Function|undefined)
  * }} params
  * @private
  */
@@ -152,19 +155,20 @@ visflow.upload.uploadDialog_ = function(dialog, params) {
   /** @type {number} */
   var dataId = -1;
   /** @type {string} */
-  var dataName = params.defaultDataName !== undefined ?
-    params.defaultDataName : '';
-  var dataFile = '';
+  var dataName = params.defaultDataName || '';
+  /** @type {string} */
+  var dataFile = params.defaultFileName || '';
   var prevDataName = '';
   var prevDataFile = '';
   var isOwner = true;
 
   // Checks if all required fields are filled.
   var uploadReady = function() {
+    var fileSelected = selectedFile || params.defaultFileName != undefined;
     confirm.prop('disabled', dataName === '' ||
-      (isOwner && !selectedFile && (dataId == -1 ||
+      (isOwner && !fileSelected && (dataId == -1 ||
       dataIdInfos[dataId].shareWith == shareWith.val())) ||
-      (!isOwner && !selectedFile));
+      (!isOwner && !fileSelected));
   };
 
   var file = dialog.find('#file');
@@ -279,12 +283,12 @@ visflow.upload.uploadDialog_ = function(dialog, params) {
  * @param {!jQuery} dialog
  * @param {{
  *   dataList: !Array<visflow.data.ListInfo>,
- *   pack: !visflow.Subset
+ *   pack: !visflow.Subset,
+ *   callback: (Function|undefined)
  * }} params
  * @private
  */
 visflow.upload.exportDialog_ = function(dialog, params) {
-  var confirm = dialog.find('#confirm');
   var pack = params.pack;
 
   dialog.find('#btn-file').prop('disabled', true);

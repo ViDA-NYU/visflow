@@ -129,7 +129,9 @@ visflow.d3m.socket.onmessage = function(event) {
       visflow.d3m.loadPipelineAsDiagram(/** @type {d3m.Dataflow} */(res));
       break;
     case d3m.Rpc.GET_DATAFLOW_RESULTS:
-      visflow.d3m.updatePipelineResults(/** @type {d3m.ModuleResult} */(res));
+      if (visflow.options.isD3MPipeline()) {
+        visflow.d3m.updatePipelineResults(/** @type {d3m.ModuleResult} */(res));
+      }
       break;
     default:
       visflow.error('unrecognized response from D3M socket');
@@ -332,13 +334,6 @@ visflow.d3m.updatePipelineResults = function(result) {
 };
 
 /**
- * Initializes event listeners for D3M related options.
- * @private
- */
-visflow.d3m.initEventListeners_ = function() {
-};
-
-/**
  * Resets the d3m pipelines.
  */
 visflow.d3m.reset = function() {
@@ -346,4 +341,19 @@ visflow.d3m.reset = function() {
   visflow.d3m.pipelineId = '';
   visflow.flow.clearFlow();
   visflow.pipelinePanel.update();
+};
+
+/**
+ * Initializes event listeners for D3M related options.
+ * @private
+ */
+visflow.d3m.initEventListeners_ = function() {
+  visflow.listen(visflow.options, visflow.Event.D3M_PIPELINE,
+    function(event, state) {
+      if (!state) {
+        visflow.flow.clearFlow();
+      } else if (visflow.d3m.pipelineId) {
+        visflow.d3m.loadPipelineAsDiagram(visflow.d3m.pipelineId);
+      }
+    });
 };

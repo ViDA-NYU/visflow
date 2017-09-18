@@ -73,6 +73,14 @@ visflow.options.isDiagramEditable = function() {
   return visflow.options.diagramEditable_;
 };
 
+/**
+ * Checks whether the system is showing D3M pipeline.
+ * @return {boolean}
+ */
+visflow.options.isD3MPipeline = function() {
+  return visflow.options.D3MPipeline_;
+};
+
 
 /**
  * Toggles or sets the node label visibility.

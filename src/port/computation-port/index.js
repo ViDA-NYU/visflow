@@ -36,12 +36,12 @@ visflow.ComputationPort.prototype.initContextMenu = function() {
   visflow.listen(contextMenu, visflow.Event.EXPLORE, function() {
     // If the port can trigger EXPLORE, then it must be subsetizable.
     var subset = this.node.getPortSubset(this.id);
-    console.log('hi');
+    visflow.upload.export(subset);
   }.bind(this));
 
   visflow.listen(contextMenu, visflow.Event.BEFORE_OPEN,
     function(event, menuContainer) {
-    var explore = menuContainer.find('#explore');
+    var explore = menuContainer.find('#' + visflow.Event.EXPLORE);
     if (!this.node.hasPortSubset(this.id)) {
       explore.addClass('disabled');
       explore.children('span').first().text('No Result for Display');
@@ -104,3 +104,16 @@ visflow.ComputationPort.prototype.onConnected = function(edge) {
  * @inheritDoc
  */
 visflow.ComputationPort.prototype.interactionDrag = function() {};
+
+/** @inheritDoc */
+visflow.ComputationPort.prototype.interaction = function() {
+  visflow.ComputationPort.base.interaction.call(this);
+
+  this.container
+    .dblclick(function() {
+      this.info();
+      // DEBUG(bowen)
+      visflow.debug = this.node;
+      console.log('[node]', this.node);
+    }.bind(this));
+};

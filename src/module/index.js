@@ -82,5 +82,7 @@ visflow.Module.prototype.getPortSubset = function(id) {
     '44,2.55,xyz2',
     '55,3.75,xyz3'
   ].join('\n'));
+  tabularData.file = 'pipeline output';
+  tabularData.name = 'pipeline output';
   return new visflow.Subset(new visflow.Dataset(tabularData));
 };
