@@ -393,7 +393,7 @@ visflow.Port.prototype.getSubset = function() {
 
 /**
  * Gets the container of the port.
- * @returns {!jQuery}
+ * @return {!jQuery}
  */
 visflow.Port.prototype.getContainer = function() {
   return this.container;

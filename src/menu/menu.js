@@ -53,6 +53,12 @@ visflow.menu.initDiagramDropdown_ = function() {
   diagram.find('#load').click(function() {
     visflow.diagram.load();
   });
+
+  visflow.listen(visflow.options, visflow.Event.DIAGRAM_EDITABLE,
+    function() {
+      diagram.find('#save')
+        .toggleClass('disabled', !visflow.options.isDiagramSavable());
+    });
 };
 
 /**
@@ -117,9 +123,8 @@ visflow.menu.initEventListeners_ = function() {
         navbar.find('.logged-out').hide();
         navbar.find('#username').text(visflow.user.account.username);
 
-        if (visflow.user.writePermission()) {
-          navbar.find('#save').removeClass('disabled');
-        }
+        navbar.find('#diagram #save')
+          .toggleClass('disabled', !visflow.options.isDiagramSavable());
         navbar.find('#load').removeClass('disabled');
       }
     },

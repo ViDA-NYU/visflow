@@ -175,12 +175,9 @@ visflow.options.updateDiagramEditable_ = function() {
 };
 
 /**
- * Updates subset flow state.
- * @private
+ * Checks whether the current diagram is savable (not a D3M pipeline).
+ * @return {boolean}
  */
-visflow.options.updateSubsetFlow_ = function() {
-  var newState = !visflow.flow.visMode &&
-    !visflow.options.showingD3MPipeline;
-  visflow.options.isSubsetFlow = newState;
-  visflow.signal(visflow.options, visflow.Event.SUBSET_FLOW, newState);
+visflow.options.isDiagramSavable = function() {
+  return !visflow.options.isD3MPipeline() && visflow.user.writePermission();
 };

@@ -21,7 +21,7 @@ visflow.toolPanel.init = function() {
   // Pipeline mode
   var pipeline = container.find('#pipeline');
   pipeline.click(function() {
-    visflow.options.toggleD3MPipeline();
+    visflow.d3m.togglePipeline();
   });
 
   // Alt hold

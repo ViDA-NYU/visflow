@@ -100,9 +100,10 @@ visflow.upload.setComplete = function(complete) {
  *   file: (undefined|Blob),
  *   data: (undefined|string)
  * }} formParams
+ * @param {Function=} opt_callback
  * @private
  */
-visflow.upload.upload_ = function(formParams) {
+visflow.upload.upload_ = function(formParams, opt_callback) {
   $.ajax({
     url: visflow.url.UPLOAD_DATA,
     type: 'POST',
@@ -118,6 +119,10 @@ visflow.upload.upload_ = function(formParams) {
       }
       visflow.upload.complete_ = null;
       visflow.signal(visflow.upload, visflow.Event.UPLOADED);
+
+      if (opt_callback) {
+        opt_callback(formParams);
+      }
     })
     .fail(function(res) {
       visflow.error('failed to update data:', res.responseText);
@@ -213,8 +218,7 @@ visflow.upload.uploadDialog_ = function(dialog, params) {
       event.stopPropagation();
     }
 
-    var fileName = params.defaultFileName !== undefined ?
-      params.defaultFileName : dataFile;
+    var fileName = dataFile;
     if (!isOwner) {
       fileName = dataIdInfos[dataId].file;
     }
@@ -246,11 +250,12 @@ visflow.upload.uploadDialog_ = function(dialog, params) {
       visflow.upload.overwriteDialog_({
         prevDataName: prevDataName,
         prevDataFile: prevDataFile,
-        formParams: formParams
+        formParams: formParams,
+        callback: params.callback
       });
     } else {
       // upload new data
-      visflow.upload.upload_(formParams);
+      visflow.upload.upload_(formParams, params.callback);
     }
   });
 
@@ -319,7 +324,8 @@ visflow.upload.exportDialog_ = function(dialog, params) {
  *     shareWith: string,
  *     file: (undefined|Blob),
  *     data: (undefined|string)
- *   }
+ *   },
+ *   callback: (Function|undefined)
  * }} params
  * @private
  */
@@ -333,7 +339,7 @@ visflow.upload.overwriteDialog_ = function(params) {
       dialog.find('label.old').text(params.prevDataName + ' (' +
         params.prevDataFile + ')');
       dialog.find('#confirm').click(function() {
-        visflow.upload.upload_(formParams);
+        visflow.upload.upload_(formParams, params.callback);
       });
     }
   });

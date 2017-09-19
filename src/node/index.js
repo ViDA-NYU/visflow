@@ -754,7 +754,7 @@ visflow.Node.prototype.updatePorts = function() {
       this.PORT_GAP) / 2;
   for (var i = 0; i < inPorts.length; i++) {
     var port = inPorts[i];
-    port.container.css('top', inTopBase + i * portStep);
+    port.getContainer().css('top', inTopBase + i * portStep);
     for (var j = 0; j < port.connections.length; j++) {
       port.connections[j].update();
     }
@@ -765,7 +765,7 @@ visflow.Node.prototype.updatePorts = function() {
       this.PORT_GAP) / 2;
   for (var i = 0; i < outPorts.length; i++) {
     var port = outPorts[i];
-    port.container.css('top', outTopBase + i * portStep);
+    port.getContainer().css('top', outTopBase + i * portStep);
     for (var j = 0; j < port.connections.length; j++) {
       port.connections[j].update();
     }
@@ -1573,9 +1573,13 @@ visflow.Node.prototype.setProgress = function(percent) {
 
 /**
  * Shows the node's progress bar.
+ * @param {number=} opt_percent Between 0 and 1.
  */
-visflow.Node.prototype.showProgress = function() {
+visflow.Node.prototype.showProgress = function(opt_percent) {
   this.container.children('.progress').show();
+  if (opt_percent != undefined) {
+    this.setProgress(opt_percent);
+  }
 };
 
 /**

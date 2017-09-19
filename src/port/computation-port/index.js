@@ -35,8 +35,7 @@ visflow.ComputationPort.prototype.initContextMenu = function() {
 
   visflow.listen(contextMenu, visflow.Event.EXPLORE, function() {
     // If the port can trigger EXPLORE, then it must be subsetizable.
-    var subset = this.node.getPortSubset(this.id);
-    visflow.upload.export(subset);
+    this.node.explorePortSubset(this.id);
   }.bind(this));
 
   visflow.listen(contextMenu, visflow.Event.BEFORE_OPEN,

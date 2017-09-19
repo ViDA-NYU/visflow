@@ -399,3 +399,24 @@ visflow.diagram.listTable_ = function(table, fileList) {
     }
   });
 };
+
+/**
+ * Initializes a diagram with a single data source of given data.
+ * @param {string} fileName
+ */
+visflow.diagram.newSingleDataSource = function(fileName) {
+  visflow.flow.clearFlow();
+  var node = visflow.flow.createNode('dataSource', {
+    onReady: function() {
+      visflow.data.listData(function(dataList) {
+        dataList.forEach(function(dataset, dataIndex) {
+          if (dataset.file == fileName) {
+            node.setData(dataset);
+          }
+        });
+      });
+      var main = $('#main');
+      node.moveTo(main.width() / 3, main.height() / 2);
+    }
+  });
+};

@@ -110,6 +110,16 @@ visflow.pipelinePanel.initPanel_ = function(opt_callback) {
   var content = container.find('.content');
   content.load(visflow.pipelinePanel.TEMPLATE_, function() {
     visflow.pipelinePanel.tableTemplate_ = container.find('table').clone();
+
+    var explore = container.find('#explore');
+    explore.click(function() {
+      var subset = visflow.d3m.pipelinesToSubset();
+      visflow.upload.export(subset, function(fileParams) {
+        visflow.options.toggleD3MPipeline(false);
+        visflow.diagram.newSingleDataSource(fileParams.fileName);
+      });
+    });
+
     if (opt_callback) {
       opt_callback();
     }
@@ -120,37 +130,6 @@ visflow.pipelinePanel.initPanel_ = function(opt_callback) {
  * Updates the pipeline list table.
  */
 visflow.pipelinePanel.update = function() {
-  var metrics = {};
-  /**
-   * Pipeline id to object of metric scores. Metric score is from metric enum
-   * to score values.
-   * @type {!Object<!Object<number>>}
-   */
-  var pipelineMetrics = {};
-  visflow.d3m.pipelines.forEach(function(pipeline) {
-    if (!(pipeline.id in pipelineMetrics)) {
-      pipelineMetrics[pipeline.id] = {};
-    }
-    if (pipeline.scores) {
-      pipeline.scores.forEach(function(score) {
-        metrics[score.metric] = true;
-        pipelineMetrics[pipeline.id][score.metric] = score.value;
-      });
-    }
-  });
-  var pipelines = visflow.d3m.pipelines.map(function(pipeline) {
-    var row = {
-      id: pipeline.id,
-      status: pipeline.status ?
-        d3m.enumToText(d3m.StatusCode, pipeline.status) : 'N/A',
-      progress: pipeline.progress ?
-        d3m.enumToText(d3m.Progress, pipeline.progress) : 'N/A'
-    };
-    for (var metric in metrics) {
-      row['score' + metric] = pipelineMetrics[pipeline.id][+metric] || 'N/A';
-    }
-    return row;
-  });
   var container = $(visflow.pipelinePanel.container_);
   if (visflow.pipelinePanel.dataTable_) {
     visflow.pipelinePanel.dataTable_.destroy(true); // redraw every time
@@ -158,28 +137,15 @@ visflow.pipelinePanel.update = function() {
       container.find('.table-container'));
   }
 
-  var columns = [
-    {title: 'Pipeline Id', data: 'id'},
-    {title: 'Status', data: 'status'},
-    {title: 'Progress', data: 'progress'}
-  ];
-  // Push the metric columns dynamically.
-  for (var metric in metrics) {
-    columns.push({
-      title: visflow.utils.uppercaseFirstLetter(
-          /** @type {string} */(d3m.enumToText(d3m.Metric, +metric))),
-      data: 'score' + metric
-    });
-  }
-
+  var tableData = visflow.d3m.pipelinesToTable();
   var table = container.find('table');
   var dt = table.DataTable({
-    data: pipelines,
+    data: tableData.rows,
     select: {
       style: 'single',
       info: false
     },
-    columns: columns,
+    columns: tableData.columns,
     pageLength: 5,
     lengthMenu: false,
     pagingType: 'full',

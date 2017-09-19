@@ -181,7 +181,7 @@ d3m.ModuleOutput;
 /**
  * @typedef {{
  *   module_id: string,
- *   status: d3m.DataflowStatus,
+ *   status: d3m.ModuleStatus,
  *   progress: number,
  *   outputs: !Array<d3m.ModuleOutput>,
  *   execution_time: number
