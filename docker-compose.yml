@@ -1,13 +1,17 @@
 version: '3'
 services:
  visflow:
-  build: .
+  build: 
+   context: .
+   dockerfile: Dockerfile
   ports: 
    - '80:80'
   volumes:
    - visflow_volume:/data/visflow
  database:
-  image: 'mysql/mysql-server:5.7' 
+  build: 
+   context: .
+   dockerfile: Dockerfile.db
   ports: 
    - '3306:3306'
   environment:
