@@ -1,5 +1,5 @@
 # Base image: Apache, PHP on Debian:jessie
-FROM php:7.0-apache
+FROM php:5.6-apache
 
 LABEL maintainer="{jorgehpo, remi.rampin, yamuna, raonipd, bowen.yu}@nyu.edu"
 
@@ -55,5 +55,4 @@ RUN openssl req -new -newkey rsa:2048 -nodes -out visflow.csr -keyout visflow.ke
 RUN openssl x509 -req -in visflow.csr -signkey visflow.key -out visflow.crt
 
 RUN cat apache_conf_append.conf >> /etc/apache2/apache2.conf
-
 
