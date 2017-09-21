@@ -140,7 +140,7 @@ visflow.d3m.socket.onmessage = function(event, opt_callback) {
     case d3m.Rpc.EXPORT_PIPELINE:
       if (res.status == d3m.StatusCode.OK) {
         visflow.success('executable for pipeline ' + visflow.d3m.pipelineId +
-          ' exported successfully')
+          ' exported successfully');
       } else {
         visflow.error('cannot export pipeline executable');
       }
@@ -397,5 +397,5 @@ visflow.d3m.exportPipeline = function(pipelineId) {
     },
     'pipeline_id': pipelineId,
     'pipeline_exec_uri': '/' // TODO(bowen): figure out where to put executable
-  })
+  });
 };
