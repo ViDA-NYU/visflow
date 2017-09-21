@@ -42,7 +42,7 @@ then
   mkdir -m 755 "$demo_diagram"
 fi
 
-curl -L -o demo.zip https://www.dropbox.com/s/44hxoxpe6mtufhy/visflow-demo-data.zip?dl=0
+curl -L -o demo.zip https://www.dropbox.com/s/w2cpq1xgh18sk2o/visflow-demo-data.zip?dl=0
 unzip demo.zip -d demo
 
 cp -R demo/data/* "$demo_data"
