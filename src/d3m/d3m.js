@@ -24,6 +24,9 @@ visflow.d3m.pipelineId = '';
 /** @private @const {number} */
 visflow.d3m.SOCKET_WAIT_INTERVAL_ = 1000;
 
+/** @private @const {number} */
+visflow.d3m.DEFAULT_MAX_PIPELINES_ = 3;
+
 /**
  * Maximum wait time for socket connection.
  * @private {number}
@@ -60,6 +63,7 @@ visflow.d3m.pipelines = [];
  */
 visflow.d3m.sendMessage = function(fname, msg, opt_callback) {
   var rid = visflow.utils.randomString(6);
+  console.log('[send]', msg);
   visflow.d3m.socket.send(JSON.stringify({
     // Request id is used to distinguish responses of different messages.
     rid: rid,
@@ -86,7 +90,7 @@ visflow.d3m.socket.onmessage = function(event, opt_callback) {
 
   var rid = data.rid;
   var res = data.object;
-  console.log('socket message', res);
+  console.log('[receive]', res);
   if (!(rid in visflow.d3m.expects_)) {
     visflow.error(rid, 'not expected but received');
   }
@@ -170,7 +174,7 @@ visflow.d3m.startSession = function() {
       clearInterval(wait);
       visflow.d3m.sendMessage(d3m.Rpc.START_SESSION, {
         'user_agent': 'visflow',
-        'version': 'v0.3'
+        'version': '2017.9.11'
       });
     } else {
       visflow.warning('waiting for D3M server connection');
@@ -287,9 +291,16 @@ visflow.d3m.createPipelines = function(problem) {
       d3m.TaskSubtype.NONE,
     'task_description': problem.schema.descriptionFile,
     'metrics': [d3m.metricToNumber(problem.schema.metric)],
+    'output': d3m.outputTypeToNumber(problem.schema.outputType),
+    'train_features': [{
+      'feature_id': '', // TODO(bowen): what to put here?
+      'data_uri': d3m.getDataPath(problem.id)
+    }],
     'target_features': [{
-      'feature_id': problem.schema.target.field
-    }]
+      'feature_id': problem.schema.target.field,
+      'data_uri': d3m.getDataPath(problem.id)
+    }],
+    'max_pipelines': visflow.d3m.DEFAULT_MAX_PIPELINES_
   });
 };
 

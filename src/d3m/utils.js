@@ -81,6 +81,16 @@ d3m.metricToNumber = function(metric) {
 };
 
 /**
+ * Converts an output type to its enum number.
+ * @param {string} outputType
+ * @return {?number}
+ */
+d3m.outputTypeToNumber = function(outputType) {
+  var result = d3m.enumKeyToNumber_(d3m.OutputType, outputType);
+  return result == null ? null : +result;
+};
+
+/**
  * Converts an enum number to enum key.
  * @param {!Object<number>} enumDict
  * @param {number} num
