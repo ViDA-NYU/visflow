@@ -984,7 +984,7 @@ visflow.Flow.prototype.stopNodeTransitions = function() {
  * @return {!visflow.Node}
  */
 visflow.Flow.prototype.getNode = function(id) {
-  visflow.assert(id in this.nodes, 'node id not found');
+  visflow.assert(id in this.nodes, 'node id ' + id + ' not found');
   return this.nodes[id];
 };
 

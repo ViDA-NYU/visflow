@@ -111,13 +111,22 @@ visflow.pipelinePanel.initPanel_ = function(opt_callback) {
   content.load(visflow.pipelinePanel.TEMPLATE_, function() {
     visflow.pipelinePanel.tableTemplate_ = container.find('table').clone();
 
-    var explore = container.find('#explore');
-    explore.click(function() {
+    var exploreBtn = container.find('#explore');
+    exploreBtn.click(function() {
       var subset = visflow.d3m.pipelinesToSubset();
       visflow.upload.export(subset, function(fileParams) {
         visflow.options.toggleD3MPipeline(false);
         visflow.diagram.newSingleDataSource(fileParams.fileName);
       });
+    });
+
+    var exportBtn = container.find('#export');
+    exportBtn.click(function() {
+      if (!visflow.d3m.pipelineId) {
+        visflow.warning('please select a pipeline');
+        return;
+      }
+      visflow.d3m.exportPipeline(visflow.d3m.pipelineId);
     });
 
     if (opt_callback) {

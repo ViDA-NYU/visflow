@@ -64,7 +64,8 @@ d3m.Rpc = {
   START_SESSION: 'StartSession',
   END_SESSION: 'EndSession',
   DESCRIBE_DATAFLOW: 'DescribeDataflow',
-  GET_DATAFLOW_RESULTS: 'GetDataflowResults'
+  GET_DATAFLOW_RESULTS: 'GetDataflowResults',
+  EXPORT_PIPELINE: 'ExportPipeline'
 };
 
 

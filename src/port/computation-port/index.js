@@ -56,6 +56,14 @@ visflow.ComputationPort.prototype.setContainer = function(container) {
   this.container.addClass('computation');
 };
 
+/**
+ * Has no connection number limit.
+ * @inheritDoc
+ */
+visflow.ComputationPort.prototype.hasMoreConnections = function() {
+  return true;
+};
+
 /** @inheritDoc */
 visflow.ComputationPort.prototype.connectable = function(port) {
   var result = visflow.ComputationPort.base.connectable.call(this, port);

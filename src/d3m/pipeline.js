@@ -13,7 +13,7 @@ visflow.d3m.LAYOUT_MIN_X_ = 200;
 visflow.d3m.LAYOUT_STEP_Y_ = 120;
 
 /** @private @const {number} */
-visflow.d3m.LAYOUT_MIN_Y_ = 300;
+visflow.d3m.LAYOUT_MIN_Y_ = 400;
 
 /**
  * Loads the D3M pipeline as a flow diagram.

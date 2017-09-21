@@ -68,9 +68,10 @@ visflow.Module.prototype.showDetails = function() {
 /** @inheritDoc */
 visflow.Module.prototype.hasPortSubset = function(id) {
   // DEVEL(bowen)
-  if (this.label == 'sklearn: Linear SVM' && !this.getPort(id).isInput) {
-    return true;
-  }
+  if ((this.id == 'module_4' || this.id == 'module_5') &&
+    !this.getPort(id).isInput) {
+      return true;
+    }
   return false;
 };
 
@@ -104,4 +105,15 @@ visflow.Module.prototype.explorePortSubset = function(id) {
     visflow.options.toggleD3MPipeline(false);
     visflow.diagram.newSingleDataSource(fileParams.fileName);
   });
+};
+
+/** @inheritDoc */
+visflow.Module.prototype.initContextMenu = function() {
+  visflow.Module.base.initContextMenu.call(this);
+  visflow.listen(this.contextMenu, visflow.Event.BEFORE_OPEN,
+    function(event, menuContainer) {
+      var del = menuContainer.find('#' + visflow.Event.DELETE);
+      del.toggleClass('disabled', !visflow.options.isDiagramEditable());
+      // TODO(bowen): execute
+    });
 };
