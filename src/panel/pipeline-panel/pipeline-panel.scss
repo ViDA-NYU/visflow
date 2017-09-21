@@ -1,0 +1,42 @@
+@import 'src/common/common';
+
+#pipeline-panel {
+  height: 150px;
+  left: 100px;
+  padding: $padding;
+  position: relative;
+  top: 60px;
+  width: calc(100% - 100px * 2);
+  z-index: 101;
+
+  .header {
+    height: 28px;
+
+    > label {
+      border: 1px solid $gray-a;
+      border-radius: $border-radius;
+      color: $gray-5;
+      padding: 0 $padding;
+    }
+
+    > div.float-right {
+      float: right;
+    }
+  }
+
+  .content {
+    @include ui-border;
+
+    background-color: $ui-background;
+    padding: $padding;
+
+    .table-container {
+      background: $white;
+      padding: $padding;
+
+      td {
+        padding: $padding;
+      }
+    }
+  }
+}

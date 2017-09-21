@@ -35,7 +35,10 @@ DataTables.prototype.row = function(arg) {};
  */
 DataTables.prototype.rows = function(arg) {};
 
-DataTables.prototype.destroy = function() {};
+/**
+ * @param {boolean=} arg
+ */
+DataTables.prototype.destroy = function(arg) {};
 
 /**
  * @typedef {!Array<!Object>}
@@ -55,6 +58,12 @@ DataTables.Api.prototype.visible = function(arg) {};
 DataTables.Api.prototype.select = function() {};
 
 DataTables.Api.prototype.deselect = function() {};
+
+/** @return {Element} */
+DataTables.Api.prototype.node = function() {};
+
+/** @return {!Array<Element>} */
+DataTables.Api.prototype.nodes = function() {};
 
 /**
  * @return {*}

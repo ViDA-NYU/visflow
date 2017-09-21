@@ -28,13 +28,40 @@ visflow.ComputationPort = function(params) {
 
 _.inherit(visflow.ComputationPort, visflow.Port);
 
-/** @const {boolean} */
-visflow.ComputationPort.prototype.IS_COMPUTATION_PORT = true;
+
+/** @inheritDoc */
+visflow.ComputationPort.prototype.initContextMenu = function() {
+  var contextMenu = visflow.ComputationPort.base.initContextMenu.call(this);
+
+  visflow.listen(contextMenu, visflow.Event.EXPLORE, function() {
+    // If the port can trigger EXPLORE, then it must be subsetizable.
+    this.node.explorePortSubset(this.id);
+  }.bind(this));
+
+  visflow.listen(contextMenu, visflow.Event.BEFORE_OPEN,
+    function(event, menuContainer) {
+    var explore = menuContainer.find('#' + visflow.Event.EXPLORE);
+    if (!this.node.hasPortSubset(this.id)) {
+      explore.addClass('disabled');
+      explore.children('span').first().text('No Result for Display');
+    }
+  }.bind(this));
+
+  return contextMenu;
+};
 
 /** @inheritDoc */
 visflow.ComputationPort.prototype.setContainer = function(container) {
   visflow.ComputationPort.base.setContainer.call(this, container);
-  container.find('.port-icon').addClass('computation');
+  this.container.addClass('computation');
+};
+
+/**
+ * Has no connection number limit.
+ * @inheritDoc
+ */
+visflow.ComputationPort.prototype.hasMoreConnections = function() {
+  return true;
 };
 
 /** @inheritDoc */
@@ -62,19 +89,38 @@ visflow.ComputationPort.prototype.getSubset = function() {
 
 /** @inheritDoc */
 visflow.ComputationPort.prototype.info = function() {
-  var subset = this.getSubset();
-  if (subset == null) {
+  if (!this.node.hasPortSubset(this.id)) {
     return 'generic data';
   }
+  var subset = this.getSubset();
   return '(' + subset.count() + ' items)';
 };
 
 /** @inheritDoc */
 visflow.ComputationPort.prototype.onConnected = function(edge) {
   if (this.isInput) {
-    if (edge.sourcePort.IS_SUBSET_PORT) {
-      this.pack = edge.sourcePort.getSubset();
-    }
+    // TODO(bowen): Check this. Right now we always try to subset-ize the input.
+    this.pack = edge.sourcePort.getSubset();
   }
   edge.sourcePort.changed(true);
+};
+
+/**
+ * Overrides dragging interaction so that connections cannot be made on
+ * computation port.
+ * @inheritDoc
+ */
+visflow.ComputationPort.prototype.interactionDrag = function() {};
+
+/** @inheritDoc */
+visflow.ComputationPort.prototype.interaction = function() {
+  visflow.ComputationPort.base.interaction.call(this);
+
+  this.container
+    .dblclick(function() {
+      this.info();
+      // DEBUG(bowen)
+      visflow.debug = this.node;
+      console.log('[node]', this.node);
+    }.bind(this));
 };

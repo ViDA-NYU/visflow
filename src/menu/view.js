@@ -11,41 +11,52 @@ visflow.view = {};
  */
 visflow.view.initDropdown = function(navbar) {
   var view = navbar.find('#view');
+  view.find('#show-pipeline-panel').click(function() {
+    visflow.options.togglePipelinePanel();
+  });
   view.find('#show-node-label').click(function() {
     visflow.options.toggleNodeLabel(); // TODO(bowen): check visflow.options
   });
   view.find('#show-node-panel').click(function() {
-    visflow.nodePanel.toggle();
+    visflow.options.toggleNodePanel();
   });
 
-  visflow.view.initListeners_();
+  visflow.view.initEventListeners_(view);
 };
-
 
 /**
  * Initializes listeners for view dropdown.
+ * @param {!jQuery} view Menu view dropdown.
  * @private
  */
-visflow.view.initListeners_ = function() {
-  // Change of nodePanel visibility
-  visflow.listen(visflow.nodePanel, visflow.Event.CHANGE,
-    function(event, data) {
-      var value = data.value;
-      switch (data.type) {
-        case 'nodePanel':
-          $('#view #show-node-panel > i').toggleClass('glyphicon-ok', value);
-          break;
+visflow.view.initEventListeners_ = function(view) {
+  // Change "show-node-panel" button visibility.
+  visflow.listenMany(visflow.options, [
+    {
+      event: visflow.Event.DIAGRAM_EDITABLE,
+      callback: function() {
+        view.find('#show-node-panel')
+          .toggleClass('disabled', !visflow.options.isDiagramEditable());
       }
+    },
+    {
+      event: visflow.Event.NODE_PANEL,
+      callback: function(event, value) {
+        view.find('#show-node-panel > i').toggleClass('glyphicon-ok', value);
+      }
+    },
+    {
+      event: visflow.Event.PIPELINE_PANEL,
+      callback: function(event, value) {
+        view.find('#show-pipeline-panel > i')
+          .toggleClass('glyphicon-ok', value);
+      }
+    }
+  ]);
+  // Change "show-node-label" button visibility.
+  visflow.listen(visflow.options, visflow.Event.NODE_LABEL,
+    function(event, value) {
+      view.find('#show-node-label > i').toggleClass('glyphicon-ok', value);
+      visflow.flow.updateNodeLabels();
     });
-  // Change of node label visibility
-  visflow.listen(visflow.options, visflow.Event.CHANGE,
-    function(event, data) {
-      var value = data.value;
-      switch (data.type) {
-        case 'nodeLabel':
-          $('#view #show-node-label > i').toggleClass('glyphicon-ok', value);
-          visflow.flow.updateNodeLabels();
-          break;
-      }
-  });
 };

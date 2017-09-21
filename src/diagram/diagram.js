@@ -117,10 +117,10 @@ visflow.diagram.new = function() {
       dialog.find('#confirm').click(function() {
         visflow.diagram.lastDiagram = {
           id: -1,
-          name: 'myDiagram',
+          name: 'myPipeline',
           shareWith: ''
         };
-        visflow.diagram.updateURL(-1, 'myDiagram');
+        visflow.diagram.updateURL(-1, 'myPipeline');
         visflow.flow.clearFlow();
       });
     }
@@ -396,6 +396,27 @@ visflow.diagram.listTable_ = function(table, fileList) {
           visflow.diagram.delete(+diagramId, diagramInfo[diagramId].name);
           event.stopPropagation();
         });
+    }
+  });
+};
+
+/**
+ * Initializes a diagram with a single data source of given data.
+ * @param {string} fileName
+ */
+visflow.diagram.newSingleDataSource = function(fileName) {
+  visflow.flow.clearFlow();
+  var node = visflow.flow.createNode('dataSource', {
+    onReady: function() {
+      visflow.data.listData(function(dataList) {
+        dataList.forEach(function(dataset, dataIndex) {
+          if (dataset.file == fileName) {
+            node.setData(dataset);
+          }
+        });
+      });
+      var main = $('#main');
+      node.moveTo(main.width() / 3, main.height() / 2);
     }
   });
 };
