@@ -6,7 +6,8 @@ LABEL maintainer="{jorgehpo, remi.rampin, yamuna, raonipd, bowen.yu}@nyu.edu"
 RUN apt-get update
 
 # Installing php
-RUN apt-get install -y php5 php5-mysql php5-curl php5-cli libapache2-mod-php5
+RUN apt-get install -y php5 php5-curl php5-cli libapache2-mod-php5 php5-mysqlnd
+
 
 # Installing build-essentials
 RUN apt-get install -y build-essential
@@ -31,3 +32,5 @@ RUN openssl x509 -req -in visflow.csr -signkey visflow.key -out visflow.crt
 RUN cat apache_conf_append.conf >> /usr/local/apache2/conf/httpd.conf
 
 RUN service apache2 restart
+
+EXPOSE 443
