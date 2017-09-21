@@ -1,0 +1,8 @@
+#!/bin/bash
+
+/usr/sbin/mysqld &
+PID=`jobs -p`
+echo Started mysql with pid
+
+trap "kill -SIGQUIT $PID" INT
+wait
