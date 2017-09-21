@@ -58,7 +58,7 @@ visflow.Port = function(params) {
    */
   this.connections = [];
 
-  /** @type {!jQuery} */
+  /** @protected {!jQuery} */
   this.container = $();
 
   /** @private {boolean} */
@@ -82,7 +82,7 @@ visflow.Port.prototype.INFO_LENGTH = 100;
  */
 visflow.Port.prototype.contextMenuItems = function() {
   return [
-    // TODO(bowen): For now there is nothing to do with the generic port port.
+    // TODO(bowen): For now there is nothing to do with the generic port.
   ];
 };
 
@@ -389,4 +389,12 @@ visflow.Port.prototype.isEmpty = function() {
 visflow.Port.prototype.getSubset = function() {
   visflow.error('cannot serialize port data to subset');
   return new visflow.Subset();
+};
+
+/**
+ * Gets the container of the port.
+ * @return {!jQuery}
+ */
+visflow.Port.prototype.getContainer = function() {
+  return this.container;
 };

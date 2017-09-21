@@ -4,6 +4,9 @@
  */
 var d3m = {};
 
+/** @const {string} */
+d3m.DATA_PATH = '/data/d3m';
+
 /** @enum {number} */
 d3m.StatusCode = {
   UNKNOWN: 0,
@@ -64,7 +67,8 @@ d3m.Rpc = {
   START_SESSION: 'StartSession',
   END_SESSION: 'EndSession',
   DESCRIBE_DATAFLOW: 'DescribeDataflow',
-  GET_DATAFLOW_RESULTS: 'GetDataflowResults'
+  GET_DATAFLOW_RESULTS: 'GetDataflowResults',
+  EXPORT_PIPELINE: 'ExportPipeline'
 };
 
 
@@ -95,6 +99,27 @@ d3m.TaskSubtype = {
   NONOVERLAPPING: 8
 };
 
+/** @enum {number} */
+d3m.ModuleStatus = {
+  PENDING: 0,
+  RUNNING: 1,
+  DONE: 2,
+  ERROR: 3
+};
+
+/** @enum {number} */
+d3m.OutputType = {
+  OUTPUT_TYPE_UNDEFINED: 0,
+  CLASS_LABEL: 1,
+  PROBABILITY: 2,
+  REAL: 3,
+  NODE_ID: 4,
+  VECTOR_CLASS_LABEL: 5,
+  VECTOR_STOCHASTIC: 6,
+  VECTOR_REAL: 7,
+  FILE: 8
+};
+
 /**
  * Dataset descriptor returned by list-d3m-data.php.
  * @typedef {{
@@ -104,6 +129,7 @@ d3m.TaskSubtype = {
  *     metric: string,
  *     taskType: string,
  *     taskSubType: string,
+ *     outputType: string,
  *     descriptionFile: string,
  *     target: {
  *       field: string
@@ -161,3 +187,31 @@ d3m.Connection;
  * }}
  */
 d3m.Dataflow;
+
+/**
+ * @typedef {{
+ *   output_name: string,
+ *   value: string
+ * }}
+ */
+d3m.ModuleOutput;
+
+/**
+ * @typedef {{
+ *   module_id: string,
+ *   status: d3m.ModuleStatus,
+ *   progress: number,
+ *   outputs: !Array<d3m.ModuleOutput>,
+ *   execution_time: number
+ * }}
+ */
+d3m.ModuleResult;
+
+/**
+ * Gets the path to the data folder of a problem.
+ * @param {string} id
+ * @return {string}
+ */
+d3m.getDataPath = function(id) {
+  return d3m.DATA_PATH + '/' + id + '/data';
+};

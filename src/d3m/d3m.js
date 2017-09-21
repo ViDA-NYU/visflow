@@ -24,6 +24,9 @@ visflow.d3m.pipelineId = '';
 /** @private @const {number} */
 visflow.d3m.SOCKET_WAIT_INTERVAL_ = 1000;
 
+/** @private @const {number} */
+visflow.d3m.DEFAULT_MAX_PIPELINES_ = 3;
+
 /**
  * Maximum wait time for socket connection.
  * @private {number}
@@ -56,9 +59,11 @@ visflow.d3m.pipelines = [];
  * Sends a message through the D3M socket.
  * @param {d3m.Rpc} fname Function name of the message.
  * @param {*} msg
+ * @param {Function=} opt_callback Callback to be called on a response.
  */
-visflow.d3m.sendMessage = function(fname, msg) {
+visflow.d3m.sendMessage = function(fname, msg, opt_callback) {
   var rid = visflow.utils.randomString(6);
+  console.log('[send]', msg);
   visflow.d3m.socket.send(JSON.stringify({
     // Request id is used to distinguish responses of different messages.
     rid: rid,
@@ -67,15 +72,17 @@ visflow.d3m.sendMessage = function(fname, msg) {
   }));
   visflow.d3m.expects_[rid] = {
     rid: rid,
-    fname: fname
+    fname: fname,
+    callback: opt_callback
   };
 };
 
 /**
  * Handles socket response messages.
  * @param {{data: *}} event
- */
-visflow.d3m.socket.onmessage = function(event) {
+ * @param {Function=} opt_callback Callback for receiving a response
+s */
+visflow.d3m.socket.onmessage = function(event, opt_callback) {
   var data = /** @type {{
     rid: string,
     object: !Object
@@ -83,10 +90,11 @@ visflow.d3m.socket.onmessage = function(event) {
 
   var rid = data.rid;
   var res = data.object;
-  console.log('socket message', res);
+  console.log('[receive]', res);
   if (!(rid in visflow.d3m.expects_)) {
     visflow.error(rid, 'not expected but received');
   }
+  var callback = visflow.d3m.expects_[rid].callback;
 
   switch (visflow.d3m.expects_[rid].fname) {
     case d3m.Rpc.START_SESSION:
@@ -129,7 +137,17 @@ visflow.d3m.socket.onmessage = function(event) {
       visflow.d3m.loadPipelineAsDiagram(/** @type {d3m.Dataflow} */(res));
       break;
     case d3m.Rpc.GET_DATAFLOW_RESULTS:
+      if (callback) {
+        callback(res);
+      }
       break;
+    case d3m.Rpc.EXPORT_PIPELINE:
+      if (res.status == d3m.StatusCode.OK) {
+        visflow.success('executable for pipeline ' + visflow.d3m.pipelineId +
+          ' exported successfully');
+      } else {
+        visflow.error('cannot export pipeline executable');
+      }
     default:
       visflow.error('unrecognized response from D3M socket');
   }
@@ -143,6 +161,7 @@ visflow.d3m.init = function() {
   window.onbeforeunload = function() {
     visflow.d3m.endSession();
   };
+  visflow.d3m.initEventListeners_();
 };
 
 /**
@@ -155,7 +174,7 @@ visflow.d3m.startSession = function() {
       clearInterval(wait);
       visflow.d3m.sendMessage(d3m.Rpc.START_SESSION, {
         'user_agent': 'visflow',
-        'version': 'v0.3'
+        'version': '2017.9.11'
       });
     } else {
       visflow.warning('waiting for D3M server connection');
@@ -257,7 +276,11 @@ visflow.d3m.taskSelection_ = function(dialog, dataList) {
  * @param {d3m.Dataset} problem
  */
 visflow.d3m.createPipelines = function(problem) {
+  // Clear previous pipelines.
+  visflow.d3m.reset();
+
   visflow.pipelinePanel.setTask(problem);
+
   visflow.d3m.sendMessage(d3m.Rpc.CREATE_PIPELINES, {
     'context': {
       'session_id': visflow.d3m.sessionId
@@ -268,9 +291,16 @@ visflow.d3m.createPipelines = function(problem) {
       d3m.TaskSubtype.NONE,
     'task_description': problem.schema.descriptionFile,
     'metrics': [d3m.metricToNumber(problem.schema.metric)],
+    'output': d3m.outputTypeToNumber(problem.schema.outputType),
+    'train_features': [{
+      'feature_id': '', // TODO(bowen): what to put here?
+      'data_uri': d3m.getDataPath(problem.id)
+    }],
     'target_features': [{
-      'feature_id': problem.schema.target.field
-    }]
+      'feature_id': problem.schema.target.field,
+      'data_uri': d3m.getDataPath(problem.id)
+    }],
+    'max_pipelines': visflow.d3m.DEFAULT_MAX_PIPELINES_
   });
 };
 
@@ -293,10 +323,90 @@ visflow.d3m.loadSession = function(sessionId) {
  */
 visflow.d3m.loadPipeline = function(pipelineId) {
   console.log('load pipeline', pipelineId);
+
   visflow.d3m.sendMessage(d3m.Rpc.DESCRIBE_DATAFLOW, {
     'context': {
       'session_id': visflow.d3m.sessionId
     },
     'pipeline_id': pipelineId
+  });
+
+  visflow.d3m.sendMessage(d3m.Rpc.GET_DATAFLOW_RESULTS, {
+    'context': {
+      'session_id': visflow.d3m.sessionId
+    },
+    'pipeline_id': pipelineId
+  }, function(res) {
+    if (pipelineId == visflow.d3m.pipelineId) {
+      visflow.d3m.updatePipelineResults(/** @type {d3m.ModuleResult} */(res));
+    }
+  });
+};
+
+/**
+ * Updates the newest pipeline results.
+ * @param {d3m.ModuleResult} result
+ */
+visflow.d3m.updatePipelineResults = function(result) {
+  if (!visflow.options.isD3MPipeline()) {
+    return;
+  }
+  var node = visflow.flow.getNode(result['module_id']);
+  if (result.status != d3m.ModuleStatus.DONE) {
+    node.showProgress(0);
+  } else {
+    node.hideProgress();
+  }
+  if (result.progress != undefined) {
+    node.setProgress(result.progress);
+  }
+};
+
+/**
+ * Resets the d3m pipelines.
+ */
+visflow.d3m.reset = function() {
+  visflow.d3m.pipelines = [];
+  visflow.d3m.pipelineId = '';
+  visflow.flow.clearFlow();
+  visflow.pipelinePanel.update();
+};
+
+/**
+ * Initializes event listeners for D3M related options.
+ * @private
+ */
+visflow.d3m.initEventListeners_ = function() {
+  visflow.listen(visflow.options, visflow.Event.D3M_PIPELINE,
+    function(event, state) {
+    });
+};
+
+/**
+ * Toggles the state of showing D3M pipeline by menu button.
+ */
+visflow.d3m.togglePipeline = function() {
+  visflow.flow.clearFlow();
+  if (visflow.options.isD3MPipeline()) {
+    visflow.options.toggleD3MPipeline(false);
+  } else {
+    visflow.options.toggleD3MPipeline(true);
+    if (visflow.d3m.pipelineId) {
+      visflow.d3m.loadPipeline(visflow.d3m.pipelineId);
+    }
+  }
+};
+
+/**
+ * Exports the selected pipeline to an executable.
+ * @param {string} pipelineId
+ */
+visflow.d3m.exportPipeline = function(pipelineId) {
+  visflow.d3m.sendMessage(d3m.Rpc.EXPORT_PIPELINE, {
+    'context': {
+      'session_id': visflow.d3m.sessionId
+    },
+    'pipeline_id': pipelineId,
+    'pipeline_exec_uri': '/' // TODO(bowen): figure out where to put executable
   });
 };

@@ -69,7 +69,7 @@ visflow.Flow.NEARBY_THRESHOLD_ = 200;
  * Initializes flow manager.
  */
 visflow.Flow.prototype.init = function() {
-  this.resetFlow();
+  this.resetFlow_();
 
   // TODO(bowen): check that data sources update their data list on-the-fly
   //$(visflow.upload).on('vf.uploaded', this.updateDataSources_);
@@ -86,8 +86,9 @@ visflow.Flow.prototype.init = function() {
 
 /**
  * Resets the loaded flow.
+ * @private
  */
-visflow.Flow.prototype.resetFlow = function() {
+visflow.Flow.prototype.resetFlow_ = function() {
   if (this.force) {
     this.force.stop();
   }
@@ -119,6 +120,7 @@ visflow.Flow.prototype.resetFlow = function() {
  * Creates a node of given type.
  * @param {string} type
  * @param {{
+ *   id: (string|undefined),
  *   save: (!Object|undefined),
  *   onReady: (Function|undefined),
  *   ports: (!Object|undefined)
@@ -154,7 +156,7 @@ visflow.Flow.prototype.createNode = function(type, opt_params) {
   var nodeConstructor = constructors[type];
 
   _.extend(nodeParams, {
-    id: ++this.nodeCounter_,
+    id: params.id || ++this.nodeCounter_,
     type: type,
     container: visflow.viewManager.createNodeContainer(),
     ports: ports
@@ -385,8 +387,6 @@ visflow.Flow.prototype.propagate = function(startNode) {
     var targetNodes = node.outputTargetNodes();
     targetNodes.forEach(function(targetNode) {
       dependencyCount[targetNode.id]--;
-      //console.log(targetNode.id, targetNode.type,
-      //  dependencyCount[targetNode.id]);
 
       if (dependencyCount[targetNode.id] < 0) {
         visflow.error('dependency count', dependencyCount[targetNode.id],
@@ -394,7 +394,7 @@ visflow.Flow.prototype.propagate = function(startNode) {
       }
 
       if (dependencyCount[targetNode.id] == 0) {
-        console.log('listen', targetNode.type);
+        //console.log('listen', targetNode.type);
         visflow.listen(targetNode, visflow.Event.PROCESSED, nodeProcessed);
 
         // Calling node's process(), this will also show it.
@@ -570,7 +570,7 @@ visflow.Flow.prototype.turnOffVisMode = function() {
 visflow.Flow.prototype.clearFlow = function() {
   // clear screen
   visflow.viewManager.clearFlowViews();
-  this.resetFlow();
+  this.resetFlow_();
   visflow.optionPanel.close();
 };
 
@@ -976,6 +976,16 @@ visflow.Flow.prototype.stopNodeTransitions = function() {
   _.each(this.nodes, function(node) {
     node.getContainer().stop(true);
   });
+};
+
+/**
+ * Gets the node with given id.
+ * @param {string} id
+ * @return {!visflow.Node}
+ */
+visflow.Flow.prototype.getNode = function(id) {
+  visflow.assert(id in this.nodes, 'node id ' + id + ' not found');
+  return this.nodes[id];
 };
 
 /**

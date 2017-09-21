@@ -13,7 +13,7 @@ visflow.d3m.LAYOUT_MIN_X_ = 200;
 visflow.d3m.LAYOUT_STEP_Y_ = 120;
 
 /** @private @const {number} */
-visflow.d3m.LAYOUT_MIN_Y_ = 300;
+visflow.d3m.LAYOUT_MIN_Y_ = 400;
 
 /**
  * Loads the D3M pipeline as a flow diagram.
@@ -62,11 +62,16 @@ visflow.d3m.loadPipelineAsDiagram = function(pipeline) {
     }
 
     var node = visflow.flow.createNode('module', {
+      id: module.id,
       ports: ports,
-      onReady: onNodeReady
+      onReady: function() {
+        node.showProgress();
+        onNodeReady();
+      }
     });
-    node.setLabel(module.label);
     modules[module.id] = node;
+
+    node.setLabel(module.label);
   });
 
   // Set global system flag.
@@ -116,4 +121,90 @@ visflow.d3m.layoutPipeline_ = function(modules) {
   });
 
   visflow.flow.autoLayoutAll();
+};
+
+
+/**
+ * Converts list of pipelines info to a user-readable table. Pipelines with
+ * unknown metric values will be filled with N/A.
+ * @return {{
+ *   rows: !Array<!Array<string|number>>,
+ *   columns: !Array<{title: string, data: string}>
+ * }}
+ *   rows: Table values.
+ *   columns: Columns list used for DataTables.
+ */
+visflow.d3m.pipelinesToTable = function() {
+  var metrics = {};
+  /**
+   * Pipeline id to object of metric scores. Metric score is from metric enum
+   * to score values.
+   * @type {!Object<!Object<number>>}
+   */
+  var pipelineMetrics = {};
+  visflow.d3m.pipelines.forEach(function(pipeline) {
+    if (!(pipeline.id in pipelineMetrics)) {
+      pipelineMetrics[pipeline.id] = {};
+    }
+    if (pipeline.scores) {
+      pipeline.scores.forEach(function(score) {
+        metrics[score.metric] = true;
+        pipelineMetrics[pipeline.id][score.metric] = score.value;
+      });
+    }
+  });
+  var rows = visflow.d3m.pipelines.map(function(pipeline) {
+    var row = {
+      id: pipeline.id,
+      status: pipeline.status ?
+        d3m.enumToText(d3m.StatusCode, pipeline.status) : 'N/A',
+      progress: pipeline.progress ?
+        d3m.enumToText(d3m.Progress, pipeline.progress) : 'N/A'
+    };
+    for (var metric in metrics) {
+      row['score' + metric] = pipelineMetrics[pipeline.id][+metric] || 'N/A';
+    }
+    return row;
+  });
+  var columns = [
+    {title: 'Pipeline Id', data: 'id'},
+    {title: 'Status', data: 'status'},
+    {title: 'Progress', data: 'progress'}
+  ];
+  // Push the metric columns dynamically.
+  for (var metric in metrics) {
+    columns.push({
+      title: visflow.utils.uppercaseFirstLetter(
+        /** @type {string} */(d3m.enumToText(d3m.Metric, +metric))),
+      data: 'score' + metric
+    });
+  }
+
+  return {
+    rows: rows,
+    columns: columns
+  };
+};
+
+/**
+ * Converts list of pipelines info to a subset to be explored.
+ * @return {!visflow.Subset}
+ */
+visflow.d3m.pipelinesToSubset = function() {
+  var tableData = visflow.d3m.pipelinesToTable();
+  var tabularData = visflow.parser.csv(
+    tableData.columns.map(function(column) {
+      return column.title;
+    }).join(',') + '\n' +
+    tableData.rows.map(
+      /** @param {!Object} pipeline */
+      function(pipeline) {
+        return tableData.columns.map(function(col) {
+          return col.data in pipeline ? pipeline[col.data] : 'N/A';
+        }).join(',');
+      }).join('\n')
+  );
+  tabularData.file = 'pipeline results';
+  tabularData.name = 'pipeline results';
+  return new visflow.Subset(new visflow.Dataset(tabularData));
 };

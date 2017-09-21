@@ -5,15 +5,23 @@
   left: 100px;
   padding: $padding;
   position: relative;
-  top: 40px;
+  top: 60px;
   width: calc(100% - 100px * 2);
   z-index: 101;
 
-  .header > label {
-    border: 1px solid $gray-a;
-    border-radius: $border-radius;
-    color: $gray-5;
-    padding: 0 $padding;
+  .header {
+    height: 28px;
+
+    > label {
+      border: 1px solid $gray-a;
+      border-radius: $border-radius;
+      color: $gray-5;
+      padding: 0 $padding;
+    }
+
+    > div.float-right {
+      float: right;
+    }
   }
 
   .content {

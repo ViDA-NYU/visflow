@@ -12,7 +12,7 @@ visflow.view = {};
 visflow.view.initDropdown = function(navbar) {
   var view = navbar.find('#view');
   view.find('#show-pipeline-panel').click(function() {
-    visflow.pipelinePanel.toggle();
+    visflow.options.togglePipelinePanel();
   });
   view.find('#show-node-label').click(function() {
     visflow.options.toggleNodeLabel(); // TODO(bowen): check visflow.options
@@ -43,6 +43,13 @@ visflow.view.initEventListeners_ = function(view) {
       event: visflow.Event.NODE_PANEL,
       callback: function(event, value) {
         view.find('#show-node-panel > i').toggleClass('glyphicon-ok', value);
+      }
+    },
+    {
+      event: visflow.Event.PIPELINE_PANEL,
+      callback: function(event, value) {
+        view.find('#show-pipeline-panel > i')
+          .toggleClass('glyphicon-ok', value);
       }
     }
   ]);

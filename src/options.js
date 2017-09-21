@@ -24,6 +24,12 @@ visflow.options.nodeLabel_ = true;
 visflow.options.nodePanel_ = true;
 
 /**
+ * Whether to show the pipeline panel.
+ * @private {boolean}
+ */
+visflow.options.pipelinePanel_ = true;
+
+/**
  * Whether to allow diagram editing.
  * @private {boolean}
  */
@@ -68,6 +74,15 @@ visflow.options.isDiagramEditable = function() {
 };
 
 /**
+ * Checks whether the system is showing D3M pipeline.
+ * @return {boolean}
+ */
+visflow.options.isD3MPipeline = function() {
+  return visflow.options.D3MPipeline_;
+};
+
+
+/**
  * Toggles or sets the node label visibility.
  * @param {boolean=} opt_state
  */
@@ -94,6 +109,22 @@ visflow.options.toggleNodePanel = function(opt_state) {
     visflow.nodePanel.toggle(newState);
 
     visflow.signal(visflow.options, visflow.Event.NODE_PANEL, newState);
+  }
+};
+
+/**
+ * Toggles or sets the pipeline panel visibility.
+ * @param {boolean=} opt_state
+ */
+visflow.options.togglePipelinePanel = function(opt_state) {
+  var newState = opt_state != undefined ?
+    opt_state : !visflow.options.pipelinePanel_;
+  if (newState != visflow.options.pipelinePanel_) {
+    visflow.options.pipelinePanel_ = newState;
+
+    visflow.pipelinePanel.toggle(newState);
+
+    visflow.signal(visflow.options, visflow.Event.PIPELINE_PANEL, newState);
   }
 };
 
@@ -141,4 +172,12 @@ visflow.options.updateDiagramEditable_ = function() {
     visflow.signal(visflow.options, visflow.Event.DIAGRAM_EDITABLE, newState);
   }
   visflow.signal(visflow.options, visflow.Event.D3M_PIPELINE, newState);
+};
+
+/**
+ * Checks whether the current diagram is savable (not a D3M pipeline).
+ * @return {boolean}
+ */
+visflow.options.isDiagramSavable = function() {
+  return !visflow.options.isD3MPipeline() && visflow.user.writePermission();
 };
