@@ -52,7 +52,8 @@ visflow.Event = {
   FLOWSENSE: 1000,
 
   // D3M
-  D3M_PIPELINE: 2000
+  D3M_PIPELINE: 2000,
+  PIPELINE_PANEL: 2001
 };
 
 /**

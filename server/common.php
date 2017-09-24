@@ -52,7 +52,7 @@ if ($file)
 function check_dir($dir)
 {
   if (!is_dir($dir))
-    mkdir($dir, 0744, true);
+    mkdir($dir, 0755, true);
 }
 
 define('BASE_PATH', $base_path);

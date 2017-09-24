@@ -40,8 +40,9 @@ visflow.upload.upload = function() {
 /**
  * Creates an upload dialog for the exported data.
  * @param {!visflow.Subset} pack
+ * @param {Function=} opt_callback Function to call when export is complete.
  */
-visflow.upload.export = function(pack) {
+visflow.upload.export = function(pack, opt_callback) {
   if (!visflow.user.writePermission()) {
     visflow.warning('you must login to export data');
     return;
@@ -52,7 +53,8 @@ visflow.upload.export = function(pack) {
       complete: visflow.upload.exportDialog_,
       params: {
         dataList: dataList,
-        pack: pack
+        pack: pack,
+        callback: opt_callback
       }
     });
   });
@@ -98,9 +100,10 @@ visflow.upload.setComplete = function(complete) {
  *   file: (undefined|Blob),
  *   data: (undefined|string)
  * }} formParams
+ * @param {Function=} opt_callback
  * @private
  */
-visflow.upload.upload_ = function(formParams) {
+visflow.upload.upload_ = function(formParams, opt_callback) {
   $.ajax({
     url: visflow.url.UPLOAD_DATA,
     type: 'POST',
@@ -116,6 +119,10 @@ visflow.upload.upload_ = function(formParams) {
       }
       visflow.upload.complete_ = null;
       visflow.signal(visflow.upload, visflow.Event.UPLOADED);
+
+      if (opt_callback) {
+        opt_callback(formParams);
+      }
     })
     .fail(function(res) {
       visflow.error('failed to update data:', res.responseText);
@@ -130,7 +137,8 @@ visflow.upload.upload_ = function(formParams) {
  *   dataList: !Array<visflow.data.ListInfo>,
  *   data: (string|undefined),
  *   defaultDataName: (string|undefined),
- *   defaultFileName: (string|undefined)
+ *   defaultFileName: (string|undefined),
+ *   callback: (Function|undefined)
  * }} params
  * @private
  */
@@ -210,8 +218,7 @@ visflow.upload.uploadDialog_ = function(dialog, params) {
       event.stopPropagation();
     }
 
-    var fileName = params.defaultFileName !== undefined ?
-      params.defaultFileName : dataFile;
+    var fileName = dataFile;
     if (!isOwner) {
       fileName = dataIdInfos[dataId].file;
     }
@@ -243,11 +250,12 @@ visflow.upload.uploadDialog_ = function(dialog, params) {
       visflow.upload.overwriteDialog_({
         prevDataName: prevDataName,
         prevDataFile: prevDataFile,
-        formParams: formParams
+        formParams: formParams,
+        callback: params.callback
       });
     } else {
       // upload new data
-      visflow.upload.upload_(formParams);
+      visflow.upload.upload_(formParams, params.callback);
     }
   });
 
@@ -280,12 +288,12 @@ visflow.upload.uploadDialog_ = function(dialog, params) {
  * @param {!jQuery} dialog
  * @param {{
  *   dataList: !Array<visflow.data.ListInfo>,
- *   pack: !visflow.Subset
+ *   pack: !visflow.Subset,
+ *   callback: (Function|undefined)
  * }} params
  * @private
  */
 visflow.upload.exportDialog_ = function(dialog, params) {
-  var confirm = dialog.find('#confirm');
   var pack = params.pack;
 
   dialog.find('#btn-file').prop('disabled', true);
@@ -316,7 +324,8 @@ visflow.upload.exportDialog_ = function(dialog, params) {
  *     shareWith: string,
  *     file: (undefined|Blob),
  *     data: (undefined|string)
- *   }
+ *   },
+ *   callback: (Function|undefined)
  * }} params
  * @private
  */
@@ -330,7 +339,7 @@ visflow.upload.overwriteDialog_ = function(params) {
       dialog.find('label.old').text(params.prevDataName + ' (' +
         params.prevDataFile + ')');
       dialog.find('#confirm').click(function() {
-        visflow.upload.upload_(formParams);
+        visflow.upload.upload_(formParams, params.callback);
       });
     }
   });

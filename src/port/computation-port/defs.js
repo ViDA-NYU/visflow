@@ -13,7 +13,7 @@ visflow.ComputationPort.prototype.contextMenuItems = function() {
   return [
     //{id: 'disconnect', text: 'Disconnect',
     //  icon: 'glyphicon glyphicon-minus-sign'},
-    {id: 'explore', text: 'Explore Data',
+    {id: visflow.Event.EXPLORE, text: 'Explore Data',
       icon: 'glyphicon glyphicon-open'}
   ];
 };

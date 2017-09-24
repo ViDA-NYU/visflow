@@ -18,6 +18,12 @@ visflow.toolPanel.init = function() {
     delay: visflow.panel.TOOLTIP_DELAY
   });
 
+  // Pipeline mode
+  var pipeline = container.find('#pipeline');
+  pipeline.click(function() {
+    visflow.d3m.togglePipeline();
+  });
+
   // Alt hold
   var alted = container.find('#alted');
   alted.click(function() {
@@ -31,6 +37,7 @@ visflow.toolPanel.init = function() {
       visflow.options.toggleVisMode();
     });
 
+  // Data upload button
   var upload = container.find('#upload');
   upload.click(function() {
     visflow.upload.upload();
@@ -44,9 +51,16 @@ visflow.toolPanel.init = function() {
  * @private
  */
 visflow.toolPanel.initEventListeners_ = function() {
-  visflow.listen(visflow.options, visflow.Event.VISMODE, function() {
-    visflow.toolPanel.updateVisMode_();
-  });
+  visflow.listenMany(visflow.options, [
+    {
+      event: visflow.Event.VISMODE,
+      callback: visflow.toolPanel.updateVisMode_
+    },
+    {
+      event: visflow.Event.D3M_PIPELINE,
+      callback: visflow.toolPanel.updateD3MPipeline_
+    }
+  ]);
   visflow.listen(visflow.interaction, visflow.Event.ALT,
     visflow.toolPanel.updateAlt_);
 
@@ -100,4 +114,14 @@ visflow.toolPanel.updateVisMode_ = function() {
 visflow.toolPanel.updateAlt_ = function() {
   visflow.toolPanel.container_.find('#alted')
     .toggleClass('active', visflow.interaction.isAlted());
+};
+
+/**
+ * Updates the pipeline button's active class to show whether the system is
+ * currently showing a pipeline.
+ * @private
+ */
+visflow.toolPanel.updateD3MPipeline_ = function() {
+  visflow.toolPanel.container_.find('#pipeline')
+    .toggleClass('active', visflow.options.isD3MPipeline());
 };
