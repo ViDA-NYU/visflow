@@ -1,8 +1,8 @@
 #!/bin/bash
 
-base_regex="base_path = *"
-data_regex="data_path = *"
-diagram_regex="diagram_path = *"
+base_regex="^base_path = .*"
+data_regex="^data_path = .*"
+diagram_regex="^diagram_path = .*"
 base_path=""
 data_path=""
 diagram_path=""
@@ -21,6 +21,7 @@ then
 fi
 done < "config"
 
+sample_data=$base_path$data_path'visflow/'
 demo_data=$base_path$data_path'demo/'
 demo_diagram=$base_path$diagram_path'demo/'
 
@@ -31,6 +32,10 @@ fi
 if [ ! -d "$demo_data" ]
 then
   mkdir -m 755 "$demo_data"
+fi
+if [ ! -d "$sample_data" ]
+then
+  mkdir -m 755 "$sample_data"
 fi
 
 if [ ! -d "$base_path$diagram_path" ]
@@ -47,3 +52,4 @@ unzip demo.zip -d demo
 
 cp -R demo/data/* "$demo_data"
 cp -R demo/diagrams/* "$demo_diagram"
+cp "$demo_data/car.csv" "$sample_data/car.csv"
