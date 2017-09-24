@@ -1,8 +1,8 @@
 #!/bin/bash
 
-base_regex="^base_path = *"
-data_regex="^data_path = *"
-diagram_regex="^diagram_path = *"
+base_regex="^base_path = .*"
+data_regex="^data_path = .*"
+diagram_regex="^diagram_path = .*"
 base_path=""
 data_path=""
 diagram_path=""

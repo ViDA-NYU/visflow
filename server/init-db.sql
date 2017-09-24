@@ -2,8 +2,7 @@ DROP DATABASE IF EXISTS visflow;
 CREATE DATABASE visflow;
 USE visflow;
 
-GRANT ALL PRIVILEGES ON visflow.* TO visflow@localhost;
-DROP USER visflow@localhost;
+DROP USER IF EXISTS visflow@localhost;
 CREATE USER visflow@localhost IDENTIFIED BY 'visflow';
 GRANT ALL PRIVILEGES ON visflow.* TO visflow@localhost;
 
