@@ -168,6 +168,7 @@ visflow.diagram.download = function(id) {
         name: data.name,
         shareWith: data.shareWith
       };
+      visflow.options.toggleD3MPipeline(false);
       visflow.flow.deserializeFlow(data.diagram);
       visflow.diagram.updateURL(id, data.name);
     })
