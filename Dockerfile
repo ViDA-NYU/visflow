@@ -59,8 +59,13 @@ RUN openssl x509 -req -in visflow.csr -signkey visflow.key -out visflow.crt
 RUN cat apache_conf_append.conf >> /etc/apache2/apache2.conf
 #RUN cat apache_conf_append.conf >> /etc/apache2/sites-enabled/000-default.conf
 
-EXPOSE 80
+# Exposing HTTP
+EXPOSE 80 
+
+# Exposing MySQL
 EXPOSE 3306
+
+#Exposing websocket
 EXPOSE 8888
 
 # Running server: Apache + MySQL
