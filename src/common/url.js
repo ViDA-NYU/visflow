@@ -6,7 +6,8 @@
 visflow.url = {};
 
 /** @const {string} */
-visflow.url.D3M_SOCKET = 'ws://' + window.location.hostname + ':8888/ws';
+visflow.url.D3M_SOCKET = (window.location.protocol == 'https:' ? 'wss' : 'ws') +
+  '://' + window.location.hostname + ':8888/ws';
 
 /** @const {string} */
 visflow.url.LIST_DATA = './server/list-data.php';
