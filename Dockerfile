@@ -62,10 +62,11 @@ RUN cat apache_conf_append.conf >> /etc/apache2/apache2.conf
 EXPOSE 80
 EXPOSE 443
 EXPOSE 3306
+EXPOSE 8888
 
 # Running server: Apache + MySQL
 RUN chmod +x start-script.sh 
 CMD ["./start-script.sh"]
 
 
-# RUN: docker run -ti -p 80:80 -p 443:443 -v data:/data/visflow -v mysql:/var/lib/mysql visflow
+# RUN: docker run -ti -p 80:80 -p 443:443 -p 8888:8888 -v data:/data/visflow -v mysql:/var/lib/mysql visflow
