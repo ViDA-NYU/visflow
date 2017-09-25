@@ -30,6 +30,8 @@ RUN apt-get install -y curl unzip
 WORKDIR /var/www/html/
 ADD . /var/www/html/
 
+RUN chmod +x server/init.sh
+
 RUN a2enmod ssl
 RUN a2enmod rewrite
 RUN a2enmod headers

@@ -9,10 +9,12 @@ echo initializing container
 touch /data/visflow/INITIALIZED_VOLUME.flag
 cd /var/www/html/server
 mysql -u root "-proot" < init-db.sql
-chmod +x init.sh
 ./init.sh
 chown -R www-data:www-data /data
 fi
 
 # Initializing Apache
-/usr/sbin/apache2ctl -D FOREGROUND
+#/usr/sbin/apache2ctl -D FOREGROUND
+service apache2 start
+/bin/bash
+
