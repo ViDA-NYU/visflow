@@ -31,6 +31,7 @@ function clientIP()
   return $ip_address;
 }
 
+/*
 if($_SERVER['SERVER_PORT'] != 443)
 {
   // redirect to https
@@ -38,12 +39,13 @@ if($_SERVER['SERVER_PORT'] != 443)
   header('Location: https://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
   exit();
 }
+*/
 
 connectDB();
 
 session_start([
   'cookie_lifetime' => SESSION_LIFETIME, // cookie duration 1 hour
-  'cookie_secure' => true,
+  //'cookie_secure' => true,
 ]);
 
 $session_id = session_id();
