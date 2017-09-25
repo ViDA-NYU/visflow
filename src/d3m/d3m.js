@@ -180,7 +180,7 @@ visflow.d3m.startSession = function() {
       visflow.warning('waiting for D3M server connection');
       timePassed += visflow.d3m.SOCKET_WAIT_INTERVAL_;
       if (timePassed > visflow.d3m.SOCKET_MAX_WAIT_) {
-        visflow.error('D3M server is unavailable');
+        visflow.error('D3M socket to TA2 is unavailable');
         clearInterval(wait);
       }
     }
@@ -286,14 +286,15 @@ visflow.d3m.createPipelines = function(problem) {
       'session_id': visflow.d3m.sessionId
     },
     'task': d3m.taskTypeToNumber(problem.schema.taskType),
-    'task_subtype': problem.schema.taskSubtype ?
-      d3m.taskSubtypeToNumber(problem.schema.taskSubtype) :
+    'task_subtype': problem.schema.taskSubType ?
+      d3m.taskSubtypeToNumber(d3m.conciseTaskSubtype(problem.schema.taskType,
+          problem.schema.taskSubType)) :
       d3m.TaskSubtype.NONE,
     'task_description': problem.schema.descriptionFile,
     'metrics': [d3m.metricToNumber(problem.schema.metric)],
     'output': d3m.outputTypeToNumber(problem.schema.outputType),
     'train_features': [{
-      'feature_id': '', // TODO(bowen): what to put here?
+      'feature_id': '*', // TODO(bowen): what to put here?
       'data_uri': d3m.getDataPath(problem.id)
     }],
     'target_features': [{

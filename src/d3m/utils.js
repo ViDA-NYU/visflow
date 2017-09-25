@@ -53,7 +53,7 @@ d3m.enumNumberToKey_ = function(enumDict, num, opt_convert) {
  * @return {?number}
  */
 d3m.taskTypeToNumber = function(taskType) {
-  var result = d3m.enumKeyToNumber_(d3m.TaskType, taskType);
+  var result = d3m.enumKeyToNumber_(d3m.TaskType, taskType.toLowerCase());
   return result == null ? null : +result;
 };
 
@@ -63,7 +63,7 @@ d3m.taskTypeToNumber = function(taskType) {
  * @return {?number}
  */
 d3m.taskSubtypeToNumber = function(taskSubtype) {
-  var result = d3m.enumKeyToNumber_(d3m.TaskSubtype, taskSubtype);
+  var result = d3m.enumKeyToNumber_(d3m.TaskSubtype, taskSubtype.toLowerCase());
   return result == null ? null : +result;
 };
 
@@ -86,7 +86,7 @@ d3m.metricToNumber = function(metric) {
  * @return {?number}
  */
 d3m.outputTypeToNumber = function(outputType) {
-  var result = d3m.enumKeyToNumber_(d3m.OutputType, outputType);
+  var result = d3m.enumKeyToNumber_(d3m.OutputType, outputType.toLowerCase());
   return result == null ? null : +result;
 };
 
