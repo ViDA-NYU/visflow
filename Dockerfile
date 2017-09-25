@@ -23,12 +23,25 @@ RUN apt-get install -y php7.0 php7.0-curl php7.0-cli libapache2-mod-php7.0 php7.
 # Installing vim
 RUN apt-get install -y vim
 
-# Installing curl and unzip
-RUN apt-get install -y curl unzip
+# Inistalling build-essential
+RUN apt-get install -y build-essential 
+
+# Installing python 
+RUN apt-get install -y python2.7 python2.7-dev python-pip
+
+# Upgrading pip
+RUN pip install --upgrade pip
 
 # # Copying visflow to apache folder
 WORKDIR /var/www/html/
 ADD . /var/www/html/
+
+
+# Installing python dependencies
+RUN pip install -r /var/www/html/server/GRPC_TA2_TA3/requirements.txt
+
+# Installing curl and unzip
+RUN apt-get install -y curl unzip
 
 RUN chmod +x server/init.sh
 
