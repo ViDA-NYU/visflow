@@ -221,6 +221,28 @@ visflow.d3m.newTask = function() {
 };
 
 /**
+ * Selects the task that is defined in the config file.
+ */
+visflow.d3m.newTaskFromConfig = function() {
+  $.get(visflow.url.D3M_CONFIG,
+    /**
+     * @param {{
+     *   config: *,
+     *   problemSchema: d3m.ProblemSchema,
+     *   datasetSchema: *
+     * }} config
+     *   config: content of d3m-config.json
+     */
+      function(config) {
+        var schema = config.problemSchema;
+        visflow.d3m.createPipelines({
+          id: schema.problemId.replace('_problem', ''),
+          schema: schema
+        });
+    });
+};
+
+/**
  * Initializes d3m selection dialog.
  * @param {!jQuery} dialog
  * @param {!Array<d3m.Dataset>} dataList

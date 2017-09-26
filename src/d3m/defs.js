@@ -121,20 +121,26 @@ d3m.OutputType = {
 };
 
 /**
+ * @typedef {{
+ *   problemId: string,
+ *   metric: string,
+ *   taskType: string,
+ *   taskSubType: string,
+ *   outputType: string,
+ *   descriptionFile: string,
+ *   target: {
+ *     field: string
+ *   }
+ * }}
+ */
+d3m.ProblemSchema;
+
+/**
  * Dataset descriptor returned by list-d3m-data.php.
  * @typedef {{
  *   id: string,
- *   size: number,
- *   schema: {
- *     metric: string,
- *     taskType: string,
- *     taskSubType: string,
- *     outputType: string,
- *     descriptionFile: string,
- *     target: {
- *       field: string
- *     }
- *   }
+ *   size: (number|undefined),
+ *   schema: d3m.ProblemSchema
  * }}
  */
 d3m.Dataset;
