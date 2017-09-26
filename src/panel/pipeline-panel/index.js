@@ -104,7 +104,7 @@ visflow.pipelinePanel.hide_ = function() {
  * @private
  */
 visflow.pipelinePanel.initPanel_ = function(opt_callback) {
-  var container = $(visflow.pipelinePanel.container_)
+  var container = visflow.pipelinePanel.container_
     .resizable({
       maxHeight: visflow.pipelinePanel.MAX_HEIGHT_
     })
@@ -113,29 +113,47 @@ visflow.pipelinePanel.initPanel_ = function(opt_callback) {
   var content = container.find('.content');
   content.load(visflow.pipelinePanel.TEMPLATE_, function() {
     visflow.pipelinePanel.tableTemplate_ = container.find('table').clone();
-
-    var exploreBtn = container.find('#explore');
-    exploreBtn.click(function() {
-      var subset = visflow.d3m.pipelinesToSubset();
-      visflow.upload.export(subset, function(fileParams) {
-        visflow.options.toggleD3MPipeline(false);
-        visflow.diagram.newSingleDataSource(fileParams.fileName);
-      });
-    });
-
-    var exportBtn = container.find('#export');
-    exportBtn.click(function() {
-      if (!visflow.d3m.pipelineId) {
-        visflow.warning('please select a pipeline');
-        return;
-      }
-      visflow.d3m.exportPipeline(visflow.d3m.pipelineId);
-    });
-
+    visflow.pipelinePanel.initPipelineDropdown_();
     if (opt_callback) {
       opt_callback();
     }
   });
+};
+
+/**
+ * Initializes the pipeline dropdown. Creates click listeners.
+ * @private
+ */
+visflow.pipelinePanel.initPipelineDropdown_ = function() {
+  var container = visflow.pipelinePanel.container_;
+  container.click(visflow.pipelinePanel.updatePipelineDropdown_);
+
+  var exploreBtn = container.find('#explore');
+  exploreBtn.click(function() {
+    var subset = visflow.d3m.pipelinesToSubset();
+    visflow.upload.export(subset, function(fileParams) {
+      visflow.options.toggleD3MPipeline(false);
+      visflow.diagram.newSingleDataSource(fileParams.fileName);
+    });
+  });
+
+  var exportBtn = container.find('#export');
+  exportBtn.click(function() {
+    if (!visflow.d3m.pipelineId) {
+      visflow.warning('please select a pipeline');
+      return;
+    }
+    visflow.d3m.exportPipeline(visflow.d3m.pipelineId);
+  });
+};
+
+/**
+ * Updates the enabled states of pipeline dropdown buttons.
+ * @private
+ */
+visflow.pipelinePanel.updatePipelineDropdown_ = function() {
+  var container = visflow.pipelinePanel.container_;
+  container.find('#export').toggleClass('disabled', !visflow.d3m.pipelineId);
 };
 
 /**

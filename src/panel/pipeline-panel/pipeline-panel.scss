@@ -16,11 +16,22 @@
       border: 1px solid $gray-a;
       border-radius: $border-radius;
       color: $gray-5;
-      padding: 0 $padding;
+      margin-right: .3em;
+      padding: 0 $padding-large;
     }
 
-    > div.float-right {
+    > button.float-right {
       float: right;
+
+      > i {
+        left: -1px;
+        top: 3px;
+      }
+    }
+
+    #pipeline.dropdown-menu {
+      left: calc(100% - 167px);
+      top: 30px;
     }
   }
 
