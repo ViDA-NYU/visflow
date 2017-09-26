@@ -3,6 +3,9 @@ FROM ubuntu:xenial
 
 LABEL maintainer="{jorgehpo, remi.rampin, yamuna, raonipd, bowen.yu}@nyu.edu"
 
+ENV GRPC_PORT 50051
+
+
 RUN apt-get update
 
 # Installing apache2
@@ -51,11 +54,11 @@ RUN a2enmod headers
 RUN a2enmod proxy
 RUN a2enmod proxy_wstunnel
 
-# Creating SSL files: csr and key
-RUN openssl req -new -newkey rsa:2048 -nodes -out visflow.csr -keyout visflow.key -subj "/C=US/ST=/L=/O=NYU/CN=visflow"
+# # Creating SSL files: csr and key
+# RUN openssl req -new -newkey rsa:2048 -nodes -out visflow.csr -keyout visflow.key -subj "/C=US/ST=/L=/O=NYU/CN=visflow"
 
-# Creating crt file from csr and key
-RUN openssl x509 -req -in visflow.csr -signkey visflow.key -out visflow.crt
+# # Creating crt file from csr and key
+# RUN openssl x509 -req -in visflow.csr -signkey visflow.key -out visflow.crt
 
 # Appending apache configuration
 #RUN cat apache_conf_append.conf >> /etc/apache2/apache2.conf
@@ -72,5 +75,5 @@ EXPOSE 8888
 RUN chmod +x start-script.sh 
 CMD ["./start-script.sh"]
 
-
-# RUN: docker run -ti -p 80:80 -p 8888:8888 -v data:/data/visflow -v mysql:/var/lib/mysql -d visflow
+# RUN: docker network create ta2ta3
+# RUN: docker run -ti -p 80:80 -p 8888:8888 -v data:/data/visflow -v mysql:/var/lib/mysql -v data_d3m:/data/d3m -e GRPC_PORT='5005' --name ta3 --net ta2ta3 visflow

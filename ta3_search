@@ -1,0 +1,5 @@
+sed -i .bak "s:^\(d3m_config *= *\).*:\1$1:" server/config
+echo $$ > server/ta3pid.tmp
+while true; do
+  sleep 1
+done

@@ -5,9 +5,10 @@ from protobuf_to_dict import protobuf_to_dict, dict_to_protobuf # this library t
 from enum import Enum
 from tornado import websocket, web, ioloop
 import json
+import os
 
-
-channel = grpc.insecure_channel('localhost:50051')
+GRPC_PORT = os.environ['GRPC_PORT']
+channel = grpc.insecure_channel('ta2:'+GRPC_PORT)
 coreStub = core_pb2_grpc.CoreStub(channel)
 dataflow_extStub = dataflow_ext_pb2_grpc.DataflowExtStub(channel)
 data_extStub = data_ext_pb2_grpc.DataExtStub(channel)
@@ -257,6 +258,7 @@ class SocketHandler(websocket.WebSocketHandler):
 app = web.Application([
     (r'/ws', SocketHandler)
 ])
+
 
 
 
