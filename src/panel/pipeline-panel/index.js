@@ -17,6 +17,9 @@ visflow.pipelinePanel.THEAD_TR_HEIGHT_ = 35;
 /** @private @const {number} */
 visflow.pipelinePanel.TBODY_TR_HEIGHT_ = 24;
 
+/** @private @const {number} */
+visflow.pipelinePanel.NUM_PIPELINES_PER_PAGE_ = 5;
+
 /**
  * Pipeline panel container.
  * @private {!jQuery}
@@ -154,8 +157,9 @@ visflow.pipelinePanel.update = function() {
       style: 'single',
       info: false
     },
+    stateSave: true,
     columns: tableData.columns,
-    pageLength: 5,
+    pageLength: visflow.pipelinePanel.NUM_PIPELINES_PER_PAGE_,
     lengthMenu: false,
     pagingType: 'full',
     scrollX: true,
@@ -231,7 +235,9 @@ visflow.pipelinePanel.resize_ = function() {
     .css('height', height);
 
   var needHeight = visflow.pipelinePanel.TBODY_TR_HEIGHT_ +
-    visflow.pipelinePanel.TBODY_TR_HEIGHT_ * visflow.d3m.pipelines.length +
+    visflow.pipelinePanel.TBODY_TR_HEIGHT_ *
+      Math.min(visflow.pipelinePanel.NUM_PIPELINES_PER_PAGE_,
+        visflow.d3m.pipelines.length) +
     visflow.pipelinePanel.WRAPPER_HEIGHT_;
   if (needHeight > container.height()) {
     container.height(needHeight);

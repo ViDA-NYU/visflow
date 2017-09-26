@@ -105,12 +105,14 @@ visflow.d3m.socket.onmessage = function(event, opt_callback) {
       break;
     case d3m.Rpc.CREATE_PIPELINES:
       var pipelineInfo = res['pipeline_info'];
+      var responseInfo = res['response_info'];
       var pipeline = {
         id: res['pipeline_id'],
+        status: responseInfo && responseInfo.status ?
+          responseInfo.status.code : d3m.StatusCode.UNKNOWN,
         progress: res['progress_info'],
-        status: res['response_info'].status.code,
         result_uris: pipelineInfo && pipelineInfo['predict_result_uris'] ||
-        undefined,
+          undefined,
         scores: pipelineInfo && pipelineInfo.scores
       };
       var existing = false;
@@ -298,7 +300,7 @@ visflow.d3m.createPipelines = function(problem) {
       'data_uri': d3m.getDataPath(problem.id)
     }],
     'target_features': [{
-      'feature_id': problem.schema.target.field,
+      'feature_id': '*', //problem.schema.target.field,
       'data_uri': d3m.getDataPath(problem.id)
     }],
     'max_pipelines': visflow.d3m.DEFAULT_MAX_PIPELINES_
