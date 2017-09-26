@@ -7,12 +7,14 @@ visflow.url = {};
 
 /** @const {string} */
 visflow.url.D3M_SOCKET = (window.location.protocol == 'https:' ? 'wss' : 'ws') +
-  '://' + window.location.hostname + ':8888/ws';
+  '://' + window.location.hostname + '/ws';
 
 /** @const {string} */
 visflow.url.LIST_DATA = './server/list-data.php';
 /** @const {string} */
 visflow.url.LIST_D3M_DATA = './server/list-d3m-data.php';
+/** @const {string} */
+visflow.url.D3M_CONFIG = './server/d3m-config.php';
 /** @const {string} */
 visflow.url.UPLOAD_DATA = './server/upload-data.php';
 /** @const {string} */

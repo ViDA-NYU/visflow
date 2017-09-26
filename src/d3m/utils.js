@@ -86,7 +86,7 @@ d3m.metricToNumber = function(metric) {
  * @return {?number}
  */
 d3m.outputTypeToNumber = function(outputType) {
-  var result = d3m.enumKeyToNumber_(d3m.OutputType, outputType.toLowerCase());
+  var result = d3m.enumKeyToNumber_(d3m.OutputType, outputType);
   return result == null ? null : +result;
 };
 

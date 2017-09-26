@@ -11,6 +11,7 @@ $data_path = 'data/';
 $diagram_path = 'diagrams/';
 $nlp_path = 'nlp/';
 $d3m_data_path = '/data/d3m/';
+$d3m_config_path = '/data/d3m-config.json';
 
 $min_username_length = 6;
 $min_password_length = 8;
@@ -44,6 +45,9 @@ if ($file)
       case 'd3m_data_path':
         $d3m_data_path = $val;
         break;
+      case 'd3m_config':
+        $d3m_config_path = $val;
+        break;
     }
   }
   fclose($file);
@@ -60,6 +64,7 @@ define('DATA_PATH', $data_path);
 define('DIAGRAM_PATH', $diagram_path);
 define('NLP_PATH', $nlp_path);
 define('D3M_DATA_PATH', $d3m_data_path);
+define('D3M_CONFIG_PATH', $d3m_config_path);
 
 check_dir(BASE_PATH . DATA_PATH);
 check_dir(BASE_PATH . DIAGRAM_PATH);

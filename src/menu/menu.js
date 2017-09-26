@@ -33,9 +33,8 @@ visflow.menu.init = function() {
  */
 visflow.menu.initTaskDropdown_ = function() {
   var task = $(visflow.menu.NAVBAR_SELECTOR_).find('#task');
-  task.find('#new').click(function() {
-    visflow.d3m.newTask();
-  });
+  task.find('#new').click(visflow.d3m.newTask);
+  task.find('#new-config').click(visflow.d3m.newTaskFromConfig);
 };
 
 /**
