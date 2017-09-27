@@ -55,15 +55,6 @@ RUN a2enmod headers
 RUN a2enmod proxy
 RUN a2enmod proxy_wstunnel
 
-# # Creating SSL files: csr and key
-# RUN openssl req -new -newkey rsa:2048 -nodes -out visflow.csr -keyout visflow.key -subj "/C=US/ST=/L=/O=NYU/CN=visflow"
-
-# # Creating crt file from csr and key
-# RUN openssl x509 -req -in visflow.csr -signkey visflow.key -out visflow.crt
-
-# Appending apache configuration
-#RUN cat apache_conf_append.conf >> /etc/apache2/apache2.conf
-#RUN cat apache_conf_append.conf >> /etc/apache2/sites-enabled/000-default.conf
 RUN cp vhost.conf /etc/apache2/sites-available/000-default.conf
 
 # Exposing HTTP
