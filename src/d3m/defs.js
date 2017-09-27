@@ -7,6 +7,9 @@ var d3m = {};
 /** @const {string} */
 d3m.DATA_PATH = '/data/d3m';
 
+/** @const {string} */
+d3m.D3M_INDEX = 'd3mIndex';
+
 /** @enum {number} */
 d3m.StatusCode = {
   UNKNOWN: 0,
@@ -136,14 +139,37 @@ d3m.OutputType = {
 d3m.ProblemSchema;
 
 /**
- * Dataset descriptor returned by list-d3m-data.php.
+ * @typedef {{
+ *   numSamples: number,
+ *   trainData: !Array<{
+ *     varName: string,
+ *     varRole: string,
+ *     varType: string
+ *   }>
+ * }}
+ */
+d3m.DataSchema;
+
+/**
+ * @typedef {{
+ *   datasetId: string,
+ *   testDataSchemaMirrorsTrainDataSchema: boolean,
+ *   testData: d3m.DataSchema,
+ *   trainData: d3m.DataSchema
+ * }}
+ */
+d3m.DatasetSchema;
+
+/**
+ * Dataset descriptor returned by d3m-list-data.php.
  * @typedef {{
  *   id: string,
  *   size: (number|undefined),
- *   schema: d3m.ProblemSchema
+ *   problemSchema: d3m.ProblemSchema,
+ *   datasetSchema: d3m.DatasetSchema
  * }}
  */
-d3m.Dataset;
+d3m.Problem;
 
 /**
  * D3M metric score.
@@ -160,7 +186,8 @@ d3m.Score;
  *   status: (d3m.StatusCode|undefined),
  *   progress: (d3m.Progress|undefined),
  *   id: string,
- *   scores: !Array<d3m.Score>
+ *   scores: !Array<d3m.Score>,
+ *   predictResultUri: (string|undefined)
  * }}
  */
 d3m.Pipeline;
@@ -214,10 +241,44 @@ d3m.ModuleOutput;
 d3m.ModuleResult;
 
 /**
- * Gets the path to the data folder of a problem.
- * @param {string} id
+ * @typedef {{
+ *   configJson: {
+ *     dataset_schema: string,
+ *     problem_schema: string,
+ *     training_data_root: string,
+ *     pipeline_logs_root: string,
+ *     exeutables_root: string,
+ *     temp_storage_root: string,
+ *     test_data_root: string,
+ *     results_path: string
+ *   },
+ *   problemSchema: d3m.ProblemSchema,
+ *   datasetSchema: d3m.DatasetSchema
+ * }}
+ */
+d3m.Config;
+
+/** @type {?d3m.Config} */
+d3m.config = null;
+
+/**
+ * Gets the train data root.
  * @return {string}
  */
-d3m.getDataPath = function(id) {
-  return d3m.DATA_PATH + '/' + id + '/data';
+d3m.trainingDataRoot = function() {
+  if (d3m.config) {
+    return d3m.config.configJson['training_data_root'];
+  }
+  return d3m.DATA_PATH + '/' + visflow.d3m.problem.id + '/data';
+};
+
+/**
+ * Gets the result path.
+ * @return {string}
+ */
+d3m.resultsPath = function() {
+  if (d3m.config) {
+    return d3m.config.configJson['results_path'];
+  }
+  return d3m.trainingDataRoot();
 };

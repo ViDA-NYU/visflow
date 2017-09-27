@@ -204,7 +204,6 @@ visflow.d3m.pipelinesToSubset = function() {
         }).join(',');
       }).join('\n')
   );
-  tabularData.file = 'pipeline results';
-  tabularData.name = 'pipeline results';
+  tabularData.file = tabularData.name = 'ppl-table';
   return new visflow.Subset(new visflow.Dataset(tabularData));
 };

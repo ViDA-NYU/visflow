@@ -9,7 +9,7 @@ $dataset_schema = json_decode(file_get_contents($d3m_config->dataset_schema));
 contentType('json');
 
 $result = array(
-  'config' => $d3m_config,
+  'configJson' => $d3m_config,
   'problemSchema' => $problem_schema,
   'datasetSchema' => $dataset_schema
 );

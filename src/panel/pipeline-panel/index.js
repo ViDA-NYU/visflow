@@ -129,12 +129,16 @@ visflow.pipelinePanel.initPipelineDropdown_ = function() {
   container.click(visflow.pipelinePanel.updatePipelineDropdown_);
 
   var exploreBtn = container.find('#explore');
-  exploreBtn.click(function() {
-    var subset = visflow.d3m.pipelinesToSubset();
-    visflow.upload.export(subset, function(fileParams) {
-      visflow.options.toggleD3MPipeline(false);
-      visflow.diagram.newSingleDataSource(fileParams.fileName);
-    });
+  exploreBtn.click(visflow.d3m.explorePipelineList);
+
+  var dataBtn = container.find('#data');
+  dataBtn.click(function() {
+    visflow.d3m.explorePipelineData(visflow.d3m.problem);
+  });
+
+  var resultBtn = container.find('#result');
+  resultBtn.click(function() {
+    visflow.d3m.explorePipelineResult(visflow.d3m.problem);
   });
 
   var exportBtn = container.find('#export');
@@ -153,7 +157,10 @@ visflow.pipelinePanel.initPipelineDropdown_ = function() {
  */
 visflow.pipelinePanel.updatePipelineDropdown_ = function() {
   var container = visflow.pipelinePanel.container_;
-  container.find('#export').toggleClass('disabled', !visflow.d3m.pipelineId);
+  container.find('#result').toggleClass('disabled',
+    !visflow.d3m.predictResultsPath());
+  container.find('#export').toggleClass('disabled',
+    !visflow.d3m.pipelineCompleted());
 };
 
 /**
@@ -228,14 +235,15 @@ visflow.pipelinePanel.update = function() {
 
 /**
  * Sets the current task for the panel.
- * @param {d3m.Dataset} problem
+ * @param {d3m.Problem} problem
  */
 visflow.pipelinePanel.setTask = function(problem) {
+  var problemSchema = problem.problemSchema;
   $(visflow.pipelinePanel.container_).find('.task').text([
     problem.id,
-    problem.schema.taskType + '/' +
-        d3m.conciseTaskSubtype(problem.schema.taskType,
-            problem.schema.taskSubType)
+    problemSchema.taskType + '/' +
+        d3m.conciseTaskSubtype(problemSchema.taskType,
+            problemSchema.taskSubType)
   ].join(' '));
 };
 
