@@ -12,8 +12,8 @@ services:
    - mysql:/var/lib/mysql
    - data_d3m:/data/d3m
   environment:
-   - GRPC_PORT='5005' 
-   - GRPC_HOST='ta2'
+   - GRPC_PORT=5005 
+   - GRPC_HOST=ta2
  ta2:
   image: "jhfjhfj1/tamuta2:latest"
   volumes:
