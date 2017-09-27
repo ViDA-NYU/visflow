@@ -4,6 +4,7 @@ FROM ubuntu:xenial
 LABEL maintainer="{jorgehpo, remi.rampin, yamuna, raonipd, bowen.yu}@nyu.edu"
 
 ENV GRPC_PORT 50051
+ENV GRPC_HOST localhost
 
 
 RUN apt-get update
@@ -76,4 +77,5 @@ RUN chmod +x start-script.sh
 CMD ["./start-script.sh"]
 
 # RUN: docker network create ta2ta3
+# RUN TAMU TA2: docker run -it -p 50051:5005 -v data_d3m:/data/d3m:rw --net ta2ta3 --name ta2 jhfjhfj1/tamuta2:latest
 # RUN: docker run -ti -p 80:80 -p 8888:8888 -v data:/data/visflow -v mysql:/var/lib/mysql -v data_d3m:/data/d3m -e GRPC_PORT='5005' --name ta3 --net ta2ta3 visflow

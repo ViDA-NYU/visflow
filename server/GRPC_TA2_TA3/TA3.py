@@ -8,7 +8,8 @@ import json
 import os
 
 GRPC_PORT = os.environ['GRPC_PORT']
-channel = grpc.insecure_channel('ta2:'+GRPC_PORT)
+GRPC_HOST = os.environ['GRPC_HOST']
+channel = grpc.insecure_channel(GRPC_HOST+ ":" +GRPC_PORT)
 coreStub = core_pb2_grpc.CoreStub(channel)
 dataflow_extStub = dataflow_ext_pb2_grpc.DataflowExtStub(channel)
 data_extStub = data_ext_pb2_grpc.DataExtStub(channel)

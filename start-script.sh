@@ -19,8 +19,8 @@ echo Starting python GRPC relay server...
 python2 server/GRPC_TA2_TA3/TA3.py  &
 
 # Initializing Apache
-#/usr/sbin/apache2ctl -D FOREGROUND
 echo Starting apache2 server
-service apache2 start
-/bin/bash
+/usr/sbin/apache2ctl -D FOREGROUND
+#service apache2 start
+#/bin/bash
 
