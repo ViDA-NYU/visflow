@@ -329,10 +329,7 @@ visflow.d3m.createPipelines = function(problem) {
     'task_description': problemSchema.descriptionFile,
     'metrics': [d3m.metricToNumber(problemSchema.metric)],
     'output': d3m.outputTypeToNumber(problemSchema.outputType),
-    'train_features': [{
-      'feature_id': '*', // TODO(bowen): what to put here?
-      'data_uri': d3m.trainingDataRoot()
-    }],
+    'train_features': visflow.d3m.allTrainFeatures(),
     'target_features': [{
       'feature_id': problemSchema.target.field,
       'data_uri': d3m.trainingDataRoot()
@@ -545,4 +542,43 @@ visflow.d3m.explorePipelineList = function() {
     visflow.options.toggleD3MPipeline(false);
     visflow.diagram.newSingleDataSource(fileParams.fileName);
   });
+};
+
+
+/**
+ * Gets all the train features given by the data schema.
+ * @return {!Array<{
+ *   feature_id: string,
+ *   data_uri: string
+ * }>}
+ */
+visflow.d3m.allTrainFeatures = function() {
+  /**
+   * @type {Array<{
+   *   varName: string,
+   *   varType: string,
+   *   varRole: string
+   * }>}
+   */
+  var trainData = null;
+  if (d3m.config) { // use config file
+    trainData = d3m.config.datasetSchema.trainData.trainData;
+  } else { // use manually selected problem
+    if (!visflow.d3m.problem.id) { // no problem specified
+      return [];
+    }
+    trainData = visflow.d3m.problem.datasetSchema.trainData.trainData;
+  }
+
+  var features = [];
+  trainData.forEach(function(column) {
+    if (column.varName == d3m.D3M_INDEX) {
+      return;
+    }
+    features.push({
+      feature_id: column.varName,
+      data_uri: d3m.trainingDataRoot()
+    });
+  });
+  return features;
 };
