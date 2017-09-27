@@ -1,5 +1,9 @@
-sed -i .bak "s:^\(d3m_config *= *\).*:\1$1:" server/config
+sed -i "s:^\(d3m_config *= *\).*:\1$1:" server/config
 echo $$ > server/ta3pid.tmp
+if [ ! -f "/servers_started.flag" ]; then
+  touch /servers_started.flag
+  ./start-script.sh
+fi
 while true; do
   sleep 1
 done

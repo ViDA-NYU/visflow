@@ -60,13 +60,22 @@ RUN cp vhost.conf /etc/apache2/sites-available/000-default.conf
 # Exposing HTTP
 EXPOSE 80 
 
-#Exposing websocket
+# Exposing websocket
 EXPOSE 8888
 
-# Running server: Apache + MySQL
+# Adding execute permissions
+RUN chmod +x ta3_search
 RUN chmod +x start-script.sh 
-CMD ["./start-script.sh"]
+
+# Running bash
+CMD ["/bin/bash"]
 
 # RUN: docker network create ta2ta3
-# RUN TAMU TA2: docker run -it -p 50051:5005 -v data_d3m:/data/d3m:rw --net ta2ta3 --name ta2 jhfjhfj1/tamuta2:latest
+
 # RUN: docker run -ti -p 80:80 -p 8888:8888 -v data:/data/visflow -v mysql:/var/lib/mysql -v data_d3m:/data/d3m -e GRPC_PORT='5005' --name ta3 --net ta2ta3 visflow
+
+
+# RUN TAMU TA2: docker run -it -p 50051:5005 -v data_d3m:/data/d3m:rw --net ta2ta3 --name ta2 jhfjhfj1/tamuta2:latest
+
+# RUN_OLD: docker run -ti -p 80:80 -p 8888:8888 -v data:/data/visflow -v mysql:/var/lib/mysql -v data_d3m:/data/d3m -e GRPC_PORT='5005' --name ta3 --net ta2ta3 visflow
+

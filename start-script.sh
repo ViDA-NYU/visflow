@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Initializing mysql
 # Starting mysql server
 service mysql start
 
@@ -17,12 +16,12 @@ if [ ! -f "/data/visflow/INITIALIZED_VOLUME.flag" ]; then
 fi
 
 # Initializing python relay server
-echo Starting python GRPC relay server...
+echo Starting GRPC relay server...
 python2 server/GRPC_TA2_TA3/TA3.py  &
 
 # Initializing Apache
-echo Starting apache2 server
-/usr/sbin/apache2ctl -D FOREGROUND
-#service apache2 start
+echo Starting Apache2 server
+#/usr/sbin/apache2ctl -D FOREGROUND
+service apache2 start
 #/bin/bash
 
