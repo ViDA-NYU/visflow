@@ -21,6 +21,12 @@ visflow.d3m.sessionId = '';
  */
 visflow.d3m.pipelineId = '';
 
+/**
+ * Problem specification for the current problem.
+ * @type {d3m.Problem}
+ */
+visflow.d3m.problem = /** @type {d3m.Problem} */({});
+
 /** @private @const {number} */
 visflow.d3m.SOCKET_WAIT_INTERVAL_ = 1000;
 
@@ -96,23 +102,27 @@ visflow.d3m.socket.onmessage = function(event, opt_callback) {
   }
   var callback = visflow.d3m.expects_[rid].callback;
 
+  var responseInfo = res['response_info'];
+  if (responseInfo && responseInfo.status &&
+    (responseInfo.status.code == d3m.StatusCode.UNAVAILABLE ||
+     responseInfo.status.code == d3m.StatusCode.UNIMPLEMENTED)) {
+    console.warn('TA2 does not support ' + visflow.d3m.expects_[rid].fname);
+    return;
+  }
+
   switch (visflow.d3m.expects_[rid].fname) {
     case d3m.Rpc.START_SESSION:
       visflow.d3m.sessionId = res.context['session_id'];
-
-      // DEVEL(bowen)
-      //visflow.d3m.loadSession('session_21');
       break;
     case d3m.Rpc.CREATE_PIPELINES:
       var pipelineInfo = res['pipeline_info'];
-      var responseInfo = res['response_info'];
       var pipeline = {
         id: res['pipeline_id'],
         status: responseInfo && responseInfo.status ?
           responseInfo.status.code : d3m.StatusCode.UNKNOWN,
         progress: res['progress_info'],
-        result_uris: pipelineInfo && pipelineInfo['predict_result_uris'] ||
-          undefined,
+        predictResultUri: pipelineInfo && pipelineInfo['predict_result_uris'] &&
+          pipelineInfo['predict_result_uris'][0] || undefined,
         scores: pipelineInfo && pipelineInfo.scores
       };
       var existing = false;
@@ -139,7 +149,7 @@ visflow.d3m.socket.onmessage = function(event, opt_callback) {
       visflow.d3m.loadPipelineAsDiagram(/** @type {d3m.Dataflow} */(res));
       break;
     case d3m.Rpc.GET_DATAFLOW_RESULTS:
-      if (callback) {
+      if (callback) { // updateDataflowResults
         callback(res);
       }
       break;
@@ -211,7 +221,7 @@ visflow.d3m.newTask = function() {
     complete: function(dialog) {
       $.get(visflow.url.LIST_D3M_DATA,
         /**
-         * @param {!Array<d3m.Dataset>} dataList
+         * @param {!Array<d3m.Problem>} dataList
          */
         function(dataList) {
           visflow.d3m.taskSelection_(dialog, dataList);
@@ -226,45 +236,44 @@ visflow.d3m.newTask = function() {
 visflow.d3m.newTaskFromConfig = function() {
   $.get(visflow.url.D3M_CONFIG,
     /**
-     * @param {{
-     *   config: *,
-     *   problemSchema: d3m.ProblemSchema,
-     *   datasetSchema: *
-     * }} config
-     *   config: content of d3m-config.json
+     * @param {d3m.Config} config
      */
-      function(config) {
-        var schema = config.problemSchema;
-        visflow.d3m.createPipelines({
-          id: schema.problemId.replace('_problem', ''),
-          schema: schema
-        });
-    });
+     function(config) {
+       d3m.config = config;
+       visflow.d3m.createPipelines({
+         id: config.problemSchema.problemId.replace('_problem', ''),
+         problemSchema: config.problemSchema,
+         datasetSchema: config.datasetSchema
+       });
+     });
 };
 
 /**
  * Initializes d3m selection dialog.
  * @param {!jQuery} dialog
- * @param {!Array<d3m.Dataset>} dataList
+ * @param {!Array<d3m.Problem>} problemList
  * @private
  */
-visflow.d3m.taskSelection_ = function(dialog, dataList) {
+visflow.d3m.taskSelection_ = function(dialog, problemList) {
   var table = dialog.find('table');
-  dataList.map(function(dataset) {
+  problemList.map(function(problem) {
     // Flatten the schema object into dataset descriptor.
-    dataset.metric = dataset.schema.metric;
-    dataset.taskType = dataset.schema.taskType;
-    dataset.taskSubtype = d3m.conciseTaskSubtype(dataset.taskType,
-      dataset.schema.taskSubType || 'none'); //
+    problem.metric = problem.problemSchema.metric;
+    problem.taskType = problem.problemSchema.taskType;
+    problem.taskSubtype = d3m.conciseTaskSubtype(problem.taskType,
+      problem.problemSchema.taskSubType || 'none');
+    problem.numTrainSamples = problem.datasetSchema.trainData.numSamples;
   });
   var dt = table.DataTable({
-    data: dataList,
+    data: problemList,
     select: 'single',
+    scrollX: true,
     columns: [
       {title: 'Task Id', data: 'id'},
       {title: 'TaskType', data: 'taskType'},
       {title: 'TaskSubtype', data: 'taskSubtype'},
       {title: 'Metric', data: 'metric'},
+      {title: '#TrainSamples', data: 'numTrainSamples'},
       {title: 'Size', data: 'size'}
     ],
     columnDefs: [
@@ -273,7 +282,7 @@ visflow.d3m.taskSelection_ = function(dialog, dataList) {
         render: function(size) {
           return visflow.utils.fileSizeDisplay(size);
         },
-        targets: 4
+        targets: 5
       }
     ],
     pageLength: 5,
@@ -283,7 +292,8 @@ visflow.d3m.taskSelection_ = function(dialog, dataList) {
   var problem = null;
   var confirm = dialog.find('#confirm');
   dt.on('select.dt', function(event, dt, type, tableIndices) {
-    problem = dataList[tableIndices[0]];
+    problem = problemList[tableIndices[0]];
+    visflow.d3m.problem = problem;
     confirm.prop('disabled', false);
   }).on('deselect.dt', function() {
     problem = null;
@@ -291,13 +301,14 @@ visflow.d3m.taskSelection_ = function(dialog, dataList) {
   });
 
   confirm.click(function() {
-    visflow.d3m.createPipelines(/** @type {!d3m.Dataset} */(problem));
+    d3m.config = null;
+    visflow.d3m.createPipelines(/** @type {!d3m.Problem} */(problem));
   });
 };
 
 /**
  * Requests pipeline creation for the given d3m.
- * @param {d3m.Dataset} problem
+ * @param {d3m.Problem} problem
  */
 visflow.d3m.createPipelines = function(problem) {
   // Clear previous pipelines.
@@ -305,25 +316,23 @@ visflow.d3m.createPipelines = function(problem) {
 
   visflow.pipelinePanel.setTask(problem);
 
+  var problemSchema = problem.problemSchema;
   visflow.d3m.sendMessage(d3m.Rpc.CREATE_PIPELINES, {
     'context': {
       'session_id': visflow.d3m.sessionId
     },
-    'task': d3m.taskTypeToNumber(problem.schema.taskType),
-    'task_subtype': problem.schema.taskSubType ?
-      d3m.taskSubtypeToNumber(d3m.conciseTaskSubtype(problem.schema.taskType,
-          problem.schema.taskSubType)) :
+    'task': d3m.taskTypeToNumber(problemSchema.taskType),
+    'task_subtype': problemSchema.taskSubType ?
+      d3m.taskSubtypeToNumber(d3m.conciseTaskSubtype(problemSchema.taskType,
+          problemSchema.taskSubType)) :
       d3m.TaskSubtype.NONE,
-    'task_description': problem.schema.descriptionFile,
-    'metrics': [d3m.metricToNumber(problem.schema.metric)],
-    'output': d3m.outputTypeToNumber(problem.schema.outputType),
-    'train_features': [{
-      'feature_id': '*', // TODO(bowen): what to put here?
-      'data_uri': d3m.getDataPath(problem.id)
-    }],
+    'task_description': problemSchema.descriptionFile,
+    'metrics': [d3m.metricToNumber(problemSchema.metric)],
+    'output': d3m.outputTypeToNumber(problemSchema.outputType),
+    'train_features': visflow.d3m.allTrainFeatures(),
     'target_features': [{
-      'feature_id': '*', //problem.schema.target.field,
-      'data_uri': d3m.getDataPath(problem.id)
+      'feature_id': problemSchema.target.field,
+      'data_uri': d3m.trainingDataRoot()
     }],
     'max_pipelines': visflow.d3m.DEFAULT_MAX_PIPELINES_
   });
@@ -363,16 +372,16 @@ visflow.d3m.loadPipeline = function(pipelineId) {
     'pipeline_id': pipelineId
   }, function(res) {
     if (pipelineId == visflow.d3m.pipelineId) {
-      visflow.d3m.updatePipelineResults(/** @type {d3m.ModuleResult} */(res));
+      visflow.d3m.updateDataflowResults(/** @type {d3m.ModuleResult} */(res));
     }
   });
 };
 
 /**
- * Updates the newest pipeline results.
+ * Updates the newest dataflow pipeline results.
  * @param {d3m.ModuleResult} result
  */
-visflow.d3m.updatePipelineResults = function(result) {
+visflow.d3m.updateDataflowResults = function(result) {
   if (!visflow.options.isD3MPipeline()) {
     return;
   }
@@ -434,4 +443,142 @@ visflow.d3m.exportPipeline = function(pipelineId) {
     'pipeline_id': pipelineId,
     'pipeline_exec_uri': '/' // TODO(bowen): figure out where to put executable
   });
+};
+
+/**
+ * Starts visual exploration of the pipeline data. Fetches the data with targets
+ * from the server and uploads it as tabular dataset for exploration.
+ * @param {d3m.Problem} problem
+ */
+visflow.d3m.explorePipelineData = function(problem) {
+  $.post(visflow.url.D3M_DATA, {
+    trainingDataRoot: d3m.trainingDataRoot()
+  }, function(result) {
+    /**
+     * @type {{
+     *   trainData: string,
+     *   trainTargets: string
+     * }}
+     */
+    var res = /** @type {?} */(result);
+    var subset = d3m.mergeCsvDataAndTargets(res.trainData, res.trainTargets);
+    visflow.upload.export(subset, function(fileParams) {
+      visflow.options.toggleD3MPipeline(false);
+      visflow.diagram.newSingleDataSource(fileParams.fileName);
+    });
+  });
+};
+
+/**
+ * Checks if the selected pipeline has completed.
+ * @return {boolean}
+ */
+visflow.d3m.pipelineCompleted = function() {
+  if (!visflow.d3m.pipelineId) {
+    return false;
+  }
+  var completed = false;
+  visflow.d3m.pipelines.forEach(function(pipeline) {
+    if (pipeline.id == visflow.d3m.pipelineId &&
+      pipeline.progress == d3m.Progress.COMPLETED) {
+      completed = true;
+    }
+  });
+  return completed;
+};
+
+/**
+ * Checks if the predict results are ready for the currently selected pipeline.
+ * If so, returns the path to the results. Otherwise returns empty string.
+ * @return {string}
+ */
+visflow.d3m.predictResultsPath = function() {
+  if (!visflow.d3m.pipelineCompleted()) {
+    return '';
+  }
+  var resultsPath = '';
+  visflow.d3m.pipelines.forEach(function(pipeline) {
+    if (pipeline.id == visflow.d3m.pipelineId) {
+      resultsPath = /** @type {string} */(pipeline.predictResultUri);
+    }
+  });
+  return resultsPath;
+};
+
+/**
+ * Starts visual exploration of the pipeline result. Fetches the data with
+ * results from the server and uploads it as tabular dataset for exploration.
+ * @param {d3m.Problem} problem
+ */
+visflow.d3m.explorePipelineResult = function(problem) {
+  console.warn(visflow.d3m.predictResultsPath());
+  $.post(visflow.url.D3M_RESULT, {
+    trainingDataRoot: d3m.trainingDataRoot(),
+    resultsPath: visflow.d3m.predictResultsPath() || ''
+  }, function(result) {
+    /**
+     * @type {{
+     *   trainData: string,
+     *   trainTargets: string,
+     *   predictResults: string
+     * }}
+     */
+    var res = /** @type {?} */(result);
+    var subset = d3m.mergeCsvDataAndTargets(res.trainData, res.trainTargets,
+      res.predictResults);
+    visflow.upload.export(subset, function(fileParams) {
+      visflow.options.toggleD3MPipeline(false);
+      visflow.diagram.newSingleDataSource(fileParams.fileName);
+    });
+  });
+};
+
+/**
+ * Explores the pipeline list as a table.
+ */
+visflow.d3m.explorePipelineList = function() {
+  var subset = visflow.d3m.pipelinesToSubset();
+  visflow.upload.export(subset, function(fileParams) {
+    visflow.options.toggleD3MPipeline(false);
+    visflow.diagram.newSingleDataSource(fileParams.fileName);
+  });
+};
+
+
+/**
+ * Gets all the train features given by the data schema.
+ * @return {!Array<{
+ *   feature_id: string,
+ *   data_uri: string
+ * }>}
+ */
+visflow.d3m.allTrainFeatures = function() {
+  /**
+   * @type {Array<{
+   *   varName: string,
+   *   varType: string,
+   *   varRole: string
+   * }>}
+   */
+  var trainData = null;
+  if (d3m.config) { // use config file
+    trainData = d3m.config.datasetSchema.trainData.trainData;
+  } else { // use manually selected problem
+    if (!visflow.d3m.problem.id) { // no problem specified
+      return [];
+    }
+    trainData = visflow.d3m.problem.datasetSchema.trainData.trainData;
+  }
+
+  var features = [];
+  trainData.forEach(function(column) {
+    if (column.varName == d3m.D3M_INDEX) {
+      return;
+    }
+    features.push({
+      feature_id: column.varName,
+      data_uri: d3m.trainingDataRoot()
+    });
+  });
+  return features;
 };

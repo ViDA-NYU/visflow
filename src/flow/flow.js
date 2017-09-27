@@ -769,6 +769,10 @@ visflow.Flow.prototype.keyAction = function(key, event) {
       visflow.d3m.newTask();
       event.preventDefault();
       break;
+    case 'ctrl+G':
+      visflow.d3m.newTaskFromConfig();
+      event.preventDefault();
+      break;
     case 'ctrl+E':
       visflow.diagram.new();
       event.preventDefault();

@@ -113,3 +113,67 @@ d3m.conciseTaskSubtype = function(taskType, taskSubtype) {
   }
   return taskSubtype;
 };
+
+/**
+ * Merges two CSVs by adding the second to the first.
+ * @param {string} csv1
+ * @param {string} csv2
+ * @return {string} The merged CSV.
+ * @private
+ */
+d3m.mergeCsv_ = function(csv1, csv2) {
+  var lines1 = csv1.split(/[\r\n]+/);
+  if (_.last(lines1) === '') {
+    lines1.pop();
+  }
+  var lines2 = csv2.split(/[\r\n]+/);
+  if (_.last(lines2) === '') {
+    lines2.pop();
+  }
+  var d3mIndexToRow = {};
+  var d3mIndex1 = lines1[0].indexOf(d3m.D3M_INDEX);
+  var d3mIndex2 = lines2[0].indexOf(d3m.D3M_INDEX);
+  lines1.forEach(function(line, rowIndex) {
+    var tokens = line.split(',');
+    d3mIndexToRow[tokens[d3mIndex1]] = rowIndex;
+  });
+  lines2.forEach(function(line) {
+    var tokens = line.split(',');
+    var d3mIndex = tokens[d3mIndex2];
+    tokens.forEach(function(token, colIndex) {
+      if (colIndex == d3mIndex2) {
+        return;
+      }
+      lines1[d3mIndexToRow[d3mIndex]] += ',' + token;
+    });
+  });
+  return lines1.join('\n');
+};
+
+/**
+ * Merges the CSVs of data and targets into one CSV and creates a subset for it.
+ * @param {string} data Train data CSV.
+ * @param {string} targets Train targets CSV.
+ * @param {string=} opt_results Predict results CSV.
+ * @return {!visflow.Subset}
+ */
+d3m.mergeCsvDataAndTargets = function(data, targets, opt_results) {
+  var mergedCsv = d3m.mergeCsv_(data, targets);
+
+  var results = opt_results || '';
+  if (results) {
+    var lines = results.split(/[\r\n]+/);
+    lines[0] = lines[0].split(',').map(function(token) {
+      // Rename the columns other than "d3mIndex" so that we don't have conflict
+      // column names with trainTargets.
+      return token == d3m.D3M_INDEX ? token : 'result_' + token;
+    }).join(',');
+    results = lines.join('\n');
+    mergedCsv = d3m.mergeCsv_(mergedCsv, results);
+  }
+
+  var tabularData = visflow.parser.csv(mergedCsv);
+  tabularData.file = tabularData.name = 'ppl-' +
+    (results ? 'results' : 'data');
+  return new visflow.Subset(new visflow.Dataset(tabularData));
+};

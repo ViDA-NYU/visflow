@@ -157,12 +157,12 @@ visflow.d3m.pipelinesToTable = function() {
     var row = {
       id: pipeline.id,
       status: pipeline.status ?
-        d3m.enumToText(d3m.StatusCode, pipeline.status) : 'N/A',
+        d3m.enumToText(d3m.StatusCode, pipeline.status) : '\0N/A',
       progress: pipeline.progress ?
-        d3m.enumToText(d3m.Progress, pipeline.progress) : 'N/A'
+        d3m.enumToText(d3m.Progress, pipeline.progress) : '\0N/A'
     };
     for (var metric in metrics) {
-      row['score' + metric] = pipelineMetrics[pipeline.id][+metric] || 'N/A';
+      row['score' + metric] = pipelineMetrics[pipeline.id][+metric] || '\0N/A';
     }
     return row;
   });
@@ -200,11 +200,10 @@ visflow.d3m.pipelinesToSubset = function() {
       /** @param {!Object} pipeline */
       function(pipeline) {
         return tableData.columns.map(function(col) {
-          return col.data in pipeline ? pipeline[col.data] : 'N/A';
+          return col.data in pipeline ? pipeline[col.data] : '\0N/A';
         }).join(',');
       }).join('\n')
   );
-  tabularData.file = 'pipeline results';
-  tabularData.name = 'pipeline results';
+  tabularData.file = tabularData.name = 'ppl-table';
   return new visflow.Subset(new visflow.Dataset(tabularData));
 };
