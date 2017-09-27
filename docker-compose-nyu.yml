@@ -11,14 +11,18 @@ services:
    - data:/data/visflow
    - mysql:/var/lib/mysql
    - data_d3m:/data/d3m
+   - ./test_d3m_config.json:/config.json
   environment:
    - GRPC_PORT=50051 
    - GRPC_HOST=ta2
+  entrypoint:
+   - ta3_search
+   - /config.json
  ta2:
   image: "registry.datadrivendiscovery.org/ta2/nyu_ta2:latest"
   volumes:
    - data_d3m:/data/d3m
-   - ./vistrails_ta2_config.json:/config.json
+   - ./test_d3m_config.json:/config.json
   entrypoint:
    - ta2_serve
    - /config.json

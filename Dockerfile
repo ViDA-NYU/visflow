@@ -63,9 +63,17 @@ EXPOSE 80
 # Exposing websocket
 EXPOSE 8888
 
+
+# Moving executables to root directory
+RUN mkdir d3m_executables
+RUN mv start-script.sh /usr/local/bin/start-script.sh
+RUN mv ta3_search /usr/local/bin/ta3_search
+
+
+
 # Adding execute permissions
-RUN chmod +x ta3_search
-RUN chmod +x start-script.sh 
+RUN chmod +x /usr/local/bin/ta3_search
+RUN chmod +x /usr/local/bin/start-script.sh
 
 # Running bash
 CMD ["/bin/bash"]
