@@ -11,20 +11,22 @@ services:
    - data:/data/visflow
    - mysql:/var/lib/mysql
    - data_d3m:/data/d3m
-   - d3m_temp:/data/d3m-tmp
   environment:
-   - GRPC_PORT=5005 
+   - GRPC_PORT=50051 
    - GRPC_HOST=ta2
  ta2:
-  image: "jhfjhfj1/tamuta2:latest"
+  image: "registry.datadrivendiscovery.org/ta2/nyu_ta2:latest"
   volumes:
    - data_d3m:/data/d3m
+   - ./vistrails_ta2_config.json:/config.json
+  entrypoint:
+   - ta2_serve
+   - /config.json
+   - '50051'
 volumes:
  data:
  mysql:
  data_d3m:
- d3m_temp:
 
-# RUN: docker network create ta2ta3 (not necessary in docker_compose)
-# RUN TAMU TA2: docker run -it -p 50051:5005 -v data_d3m:/data/d3m:rw --net ta2ta3 --name ta2 jhfjhfj1/tamuta2:latest
+# RUN NYU TA2: docker run -ti --rm -v $(pwd)/testconfig.json:/config.json:ro -p 50051:50051 registry.datadrivendiscovery.org/ta2/nyu_ta2:latest ta2_serve /config.json 50051
 # RUN: docker run -ti -p 80:80 -p 8888:8888 -v data:/data/visflow -v mysql:/var/lib/mysql -v data_d3m:/data/d3m -e GRPC_PORT='5005' --name ta3 --net ta2ta3 visflow
