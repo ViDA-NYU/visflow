@@ -54,6 +54,15 @@ grpcCall = {
             'outputType': MESSAGE_TYPE['BLOCKING']
         },
 
+    # rpc DeletePipelines(PipelineDeleteRequest) returns (PipelineListResult) {}
+    'DeletePipelines': 
+        {
+            'function': coreStub.DeletePipelines,
+            'input': core_pb2.PipelineDeleteRequest,
+            'inputType': MESSAGE_TYPE['BLOCKING'],
+            'outputType': MESSAGE_TYPE['BLOCKING']
+        },
+
     # rpc GetCreatePipelineResults(PipelineCreateResultsRequest) returns (stream PipelineCreateResult) {}
     'GetCreatePipelineResults': 
         {
@@ -70,6 +79,15 @@ grpcCall = {
             'input': core_pb2.PipelineExecuteResultsRequest,
             'inputType': MESSAGE_TYPE['BLOCKING'],
             'outputType': MESSAGE_TYPE['STREAMING']
+        },
+
+    #rpc ExportPipeline(PipelineExportRequest) returns (Response) {}
+    'ExportPipeline':
+        {
+            'function': coreStub.ExportPipeline,
+            'input': core_pb2.PipelineExportRequest,
+            'inputType': MESSAGE_TYPE['BLOCKING'],
+            'outputType': MESSAGE_TYPE['BLOCKING']
         },
 
     # rpc UpdateProblemSchema(UpdateProblemSchemaRequest) returns (Response) {}
