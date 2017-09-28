@@ -23,11 +23,6 @@ services:
   image: "jhfjhfj1/tamuta2:latest"
   volumes:
    - data_d3m:/data/d3m
-   - ./test_d3m_config.json:/config.json
-  entrypoint:
-   - ta2_serve
-   - /config.json
-   - '50051'
 volumes:
  data:
  mysql:

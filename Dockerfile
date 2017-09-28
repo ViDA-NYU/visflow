@@ -6,7 +6,10 @@ LABEL maintainer="{jorgehpo, remi.rampin, yamuna, raonipd, bowen.yu}@nyu.edu"
 ENV GRPC_PORT 50051
 ENV GRPC_HOST localhost
 
+# Setting volume entrypoints, in case Docker Run does not use -v 
+VOLUME ["/data/visflow", "/var/lib/mysql"]
 
+# Updating package list
 RUN apt-get update
 
 # Installing apache2
@@ -14,7 +17,6 @@ RUN apt-get install -y apache2
 
 
 # Installing MySQL
-
 RUN echo "mysql-server-5.7 mysql-server/root_password password root" | debconf-set-selections
 RUN echo "mysql-server-5.7 mysql-server/root_password_again password root" | debconf-set-selections
 RUN apt-get install -y mysql-server-5.7
@@ -81,7 +83,6 @@ CMD ["/bin/bash"]
 # RUN: docker network create ta2ta3
 
 # RUN: docker run -ti -p 80:80 -p 8888:8888 -v data:/data/visflow -v mysql:/var/lib/mysql -v data_d3m:/data/d3m -e GRPC_PORT='5005' --name ta3 --net ta2ta3 visflow
-
 
 # RUN TAMU TA2: docker run -it -p 50051:5005 -v data_d3m:/data/d3m:rw --net ta2ta3 --name ta2 jhfjhfj1/tamuta2:latest
 

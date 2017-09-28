@@ -1,0 +1,33 @@
+version: '3'
+services:
+ ta3:
+  build: 
+   context: .
+   dockerfile: Dockerfile
+  ports: 
+   - '80:80'
+   - '8888:8888'
+  volumes:
+   - data:/data/visflow
+   - mysql:/var/lib/mysql
+   - data_d3m:/data/d3m
+   - ./test_d3m_config.json:/config.json
+  environment:
+   - GRPC_PORT=50051 
+   - GRPC_HOST=ta2
+  entrypoint:
+   - ta3_search
+   - /config.json
+ ta2:
+  image: "registry.datadrivendiscovery.org/ta2/isi_ta2:latest"
+  volumes:
+   - data_d3m:/data/d3m
+   - ./test_d3m_config.json:/config.json
+  entrypoint:
+   - ta2_serve
+   - /config.json
+   - '50051'
+volumes:
+ data:
+ mysql:
+ data_d3m:
