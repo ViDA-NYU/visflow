@@ -12,6 +12,10 @@ services:
    - mysql:/var/lib/mysql
    - data_d3m:/data/d3m
    - d3m_temp:/data/d3m-tmp
+   - ./test_d3m_config.json:/config.json
+  entrypoint:
+   - ta3_search
+   - /config.json
   environment:
    - GRPC_PORT=5005 
    - GRPC_HOST=ta2
@@ -19,6 +23,11 @@ services:
   image: "jhfjhfj1/tamuta2:latest"
   volumes:
    - data_d3m:/data/d3m
+   - ./test_d3m_config.json:/config.json
+  entrypoint:
+   - ta2_serve
+   - /config.json
+   - '50051'
 volumes:
  data:
  mysql:
