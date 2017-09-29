@@ -241,6 +241,16 @@ class SocketHandler(websocket.WebSocketHandler):
     def __init__(self, *args, **kwargs):
         websocket.WebSocketHandler.__init__(self, *args, **kwargs)
         self._thread_pool = futures.ThreadPoolExecutor(max_workers=10)
+        print self.settings.get('websocket_ping_interval', None)
+
+    @property
+    def ping_interval(self):
+        """The interval for websocket keep-alive pings.
+
+        Set websocket_ping_interval = 0 to disable pings.
+        """
+        return 5
+
 
     def check_origin(self, origin):
         return True
