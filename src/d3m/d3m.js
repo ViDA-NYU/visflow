@@ -331,6 +331,9 @@ visflow.d3m.createPipelines = function(problem) {
     'output': d3m.outputTypeToNumber(problemSchema.outputType),
     'train_features': visflow.d3m.allTrainFeatures(),
     'target_features': [{
+      'feature_id': d3m.D3M_INDEX,
+      'data_uri': d3m.trainingDataRoot()
+    },{
       'feature_id': problemSchema.target.field,
       'data_uri': d3m.trainingDataRoot()
     }],
@@ -441,7 +444,7 @@ visflow.d3m.exportPipeline = function(pipelineId) {
       'session_id': visflow.d3m.sessionId
     },
     'pipeline_id': pipelineId,
-    'pipeline_exec_uri': '/' // TODO(bowen): figure out where to put executable
+    'pipeline_exec_uri': d3m.executablesRoot()
   });
 };
 
@@ -581,4 +584,16 @@ visflow.d3m.allTrainFeatures = function() {
     });
   });
   return features;
+};
+
+/**
+ * Exits VisFlow and kills the D3M process.
+ */
+visflow.d3m.exit = function() {
+  $.get(visflow.url.EXIT).done(function() {
+    visflow.success('VisFlow shutdown completed. ' +
+      'You may now close the browser.');
+  }).fail(function(res) {
+    visflow.error(res.responseText + '; shutdown failed');
+  });
 };

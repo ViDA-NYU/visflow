@@ -160,7 +160,7 @@ visflow.pipelinePanel.updatePipelineDropdown_ = function() {
   container.find('#result').toggleClass('disabled',
     !visflow.d3m.predictResultsPath());
   container.find('#export').toggleClass('disabled',
-    !visflow.d3m.pipelineCompleted());
+    !visflow.d3m.pipelineCompleted() && d3m.executablesRoot() !== '');
 };
 
 /**

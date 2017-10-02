@@ -19,6 +19,8 @@ visflow.url.D3M_CONFIG = './server/d3m-config.php';
 visflow.url.D3M_DATA = './server/d3m-data.php';
 /** @const {string} */
 visflow.url.D3M_RESULT = './server/d3m-result.php';
+/** @const {string} */
+visflow.url.EXIT = './server/d3m-exit.php';
 
 /** @const {string} */
 visflow.url.UPLOAD_DATA = './server/upload-data.php';
