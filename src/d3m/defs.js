@@ -282,3 +282,11 @@ d3m.resultsPath = function() {
   }
   return d3m.trainingDataRoot();
 };
+
+/**
+ * Gets the executables root directory.
+ * @return {string}
+ */
+d3m.executablesRoot = function() {
+  return d3m.config ? d3m.config.configJson['executables_root'] : '';
+};
