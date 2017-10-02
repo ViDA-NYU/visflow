@@ -1,7 +1,7 @@
 #!/bin/sh
 
 sed -i "s:^\(d3m_config *= *\).*:\1$1:" server/config
-echo $$ > server/ta3pid.tmp
+echo $$ > /data/visflow.pid
 if [ ! -f "/servers_started.flag" ]; then
   touch /servers_started.flag
   start-script.sh
