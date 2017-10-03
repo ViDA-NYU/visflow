@@ -11,6 +11,7 @@ services:
    - data:/data/visflow
    - mysql:/var/lib/mysql
    - data_d3m:/data/d3m
+   - d3m_temp_nyu:/data/d3m-tmp
    - ./test_d3m_config.json:/config.json
   environment:
    - GRPC_PORT=50051 
