@@ -10,7 +10,7 @@ services:
   volumes:
    - data:/data/visflow
    - mysql:/var/lib/mysql
-   - data_d3m:/data/d3m
+   - ~/seed:/data/d3m
    - d3m_temp:/data/d3m-tmp
    - ./test_d3m_config.json:/config.json
   entrypoint:
@@ -22,7 +22,7 @@ services:
  ta2:
   image: "jhfjhfj1/tamuta2:latest"
   volumes:
-   - data_d3m:/data/d3m
+   - ~/seed:/data/d3m
    - ./test_d3m_config.json:/config.json
    - d3m_temp:/data/d3m-tmp
    - d3m_logs:/data/d3m-logs

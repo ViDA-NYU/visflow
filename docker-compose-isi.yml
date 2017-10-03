@@ -10,7 +10,7 @@ services:
   volumes:
    - data:/data/visflow
    - mysql:/var/lib/mysql
-   - data_d3m:/data/d3m
+   - ~/seed:/data/d3m
    - exec_tmp:/data/d3m-tmp
    - ./test_d3m_config.json:/config.json
   environment:
@@ -22,14 +22,13 @@ services:
  ta2:
   image: "registry.datadrivendiscovery.org/ta2/isi_ta2:latest"
   volumes:
-   - data_d3m:/data/d3m
+   - ~/seed:/data/d3m
    - data_tmp:/tmp/dsbox-ta2
    - exec_tmp:/data/d3m-tmp
    - d3m_logs:/data/d3m-logs
 volumes:
  data:
  mysql:
- data_d3m:
  data_tmp:
  d3m_logs:
  exec_tmp:

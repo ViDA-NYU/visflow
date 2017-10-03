@@ -10,7 +10,7 @@ services:
   volumes:
    - data:/data/visflow
    - mysql:/var/lib/mysql
-   - data_d3m:/data/d3m
+   - ~/seed:/data/d3m
    - d3m_temp_nyu:/data/d3m-tmp
    - ./test_d3m_config.json:/config.json
   environment:
@@ -22,7 +22,7 @@ services:
  ta2:
   image: "registry.datadrivendiscovery.org/ta2/nyu_ta2:latest"
   volumes:
-   - data_d3m:/data/d3m
+   - ~/seed:/data/d3m
    - d3m_temp_nyu:/data/d3m-tmp
    - ./test_d3m_config.json:/config.json
    - d3m_logs:/data/d3m-logs
@@ -33,7 +33,6 @@ services:
 volumes:
  data:
  mysql:
- data_d3m:
  d3m_temp_nyu:
  d3m_logs:
 
