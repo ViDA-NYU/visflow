@@ -32,7 +32,6 @@ services:
 volumes:
  data:
  mysql:
- data_d3m:
  d3m_temp:
  d3m_logs:
 
