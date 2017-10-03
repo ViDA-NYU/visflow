@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Setting mysql permissions
+chown -R mysql:mysql /var/lib/mysql
+
+
 # Starting mysql server
 service mysql start
 

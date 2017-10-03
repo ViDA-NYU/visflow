@@ -25,6 +25,7 @@ services:
    - data_d3m:/data/d3m
    - ./test_d3m_config.json:/config.json
    - d3m_temp:/data/d3m-tmp
+   - d3m_logs:/data/d3m-logs
   entrypoint:
    - ta2_serve
    - /config.json
@@ -33,6 +34,7 @@ volumes:
  mysql:
  data_d3m:
  d3m_temp:
+ d3m_logs:
 
 # RUN: docker network create ta2ta3 (not necessary in docker_compose)
 # RUN TAMU TA2: docker run -it -p 50051:5005 -v data_d3m:/data/d3m:rw --net ta2ta3 --name ta2 jhfjhfj1/tamuta2:latest

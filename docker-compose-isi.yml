@@ -23,8 +23,10 @@ services:
   volumes:
    - data_d3m:/data/d3m
    - data_tmp:/tmp/dsbox-ta2
+   - d3m_logs:/data/d3m-logs
 volumes:
  data:
  mysql:
  data_d3m:
  data_tmp:
+ d3m_logs:

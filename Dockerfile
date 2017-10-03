@@ -6,8 +6,8 @@ LABEL maintainer="{jorgehpo, remi.rampin, yamuna, raonipd, bowen.yu}@nyu.edu"
 ENV GRPC_PORT 50051
 ENV GRPC_HOST localhost
 
-# Setting volume entrypoints, in case Docker Run does not use -v 
-VOLUME ["/data/visflow", "/var/lib/mysql"]
+# Setting volume entrypoints, in case they are not mounted
+# VOLUME ["/data/visflow", "/var/lib/mysql"]
 
 # Updating package list
 RUN apt-get update
@@ -67,7 +67,6 @@ EXPOSE 8888
 
 
 # Moving executables to root directory
-RUN mkdir d3m_executables
 RUN mv start-script.sh /usr/local/bin/start-script.sh
 RUN mv ta3_search /usr/local/bin/ta3_search
 
