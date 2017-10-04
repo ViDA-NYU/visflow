@@ -7,7 +7,9 @@ visflow.url = {};
 
 /** @const {string} */
 visflow.url.D3M_SOCKET = (window.location.protocol == 'https:' ? 'wss' : 'ws') +
-  '://' + window.location.hostname + '/ws';
+  '://' + window.location.hostname +
+  (window.location.port ? ':' + window.location.port : '') +
+  '/ws';
 /** @const {string} */
 visflow.url.D3M_INSTRUCTION =
   'https://vgc.poly.edu/~jhenrique/d3m/d3m-instruction.pdf';
