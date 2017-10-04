@@ -154,12 +154,13 @@ visflow.d3m.socket.onmessage = function(event, opt_callback) {
       }
       break;
     case d3m.Rpc.EXPORT_PIPELINE:
-      if (res.status == d3m.StatusCode.OK) {
+      if (res.status.code == d3m.StatusCode.OK) {
         visflow.success('executable for pipeline ' + visflow.d3m.pipelineId +
           ' exported successfully');
       } else {
         visflow.error('cannot export pipeline executable');
       }
+      break;
     default:
       visflow.error('unrecognized response from D3M socket');
   }
@@ -331,9 +332,6 @@ visflow.d3m.createPipelines = function(problem) {
     'output': d3m.outputTypeToNumber(problemSchema.outputType),
     'train_features': visflow.d3m.allTrainFeatures(),
     'target_features': [{
-      'feature_id': d3m.D3M_INDEX,
-      'data_uri': d3m.trainingDataRoot()
-    },{
       'feature_id': problemSchema.target.field,
       'data_uri': d3m.trainingDataRoot()
     }],

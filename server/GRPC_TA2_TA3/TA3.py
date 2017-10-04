@@ -5,9 +5,11 @@ from protobuf_to_dict import protobuf_to_dict, dict_to_protobuf # this library t
 from enum import Enum
 from tornado import websocket, web, ioloop
 import json
+import os
 
-
-channel = grpc.insecure_channel('localhost:50051')
+GRPC_PORT = os.environ['GRPC_PORT']
+GRPC_HOST = os.environ['GRPC_HOST']
+channel = grpc.insecure_channel(GRPC_HOST+ ":" +GRPC_PORT)
 coreStub = core_pb2_grpc.CoreStub(channel)
 dataflow_extStub = dataflow_ext_pb2_grpc.DataflowExtStub(channel)
 data_extStub = data_ext_pb2_grpc.DataExtStub(channel)
@@ -52,6 +54,15 @@ grpcCall = {
             'outputType': MESSAGE_TYPE['BLOCKING']
         },
 
+    # rpc DeletePipelines(PipelineDeleteRequest) returns (PipelineListResult) {}
+    'DeletePipelines': 
+        {
+            'function': coreStub.DeletePipelines,
+            'input': core_pb2.PipelineDeleteRequest,
+            'inputType': MESSAGE_TYPE['BLOCKING'],
+            'outputType': MESSAGE_TYPE['BLOCKING']
+        },
+
     # rpc GetCreatePipelineResults(PipelineCreateResultsRequest) returns (stream PipelineCreateResult) {}
     'GetCreatePipelineResults': 
         {
@@ -68,6 +79,15 @@ grpcCall = {
             'input': core_pb2.PipelineExecuteResultsRequest,
             'inputType': MESSAGE_TYPE['BLOCKING'],
             'outputType': MESSAGE_TYPE['STREAMING']
+        },
+
+    #rpc ExportPipeline(PipelineExportRequest) returns (Response) {}
+    'ExportPipeline':
+        {
+            'function': coreStub.ExportPipeline,
+            'input': core_pb2.PipelineExportRequest,
+            'inputType': MESSAGE_TYPE['BLOCKING'],
+            'outputType': MESSAGE_TYPE['BLOCKING']
         },
 
     # rpc UpdateProblemSchema(UpdateProblemSchemaRequest) returns (Response) {}
@@ -221,6 +241,16 @@ class SocketHandler(websocket.WebSocketHandler):
     def __init__(self, *args, **kwargs):
         websocket.WebSocketHandler.__init__(self, *args, **kwargs)
         self._thread_pool = futures.ThreadPoolExecutor(max_workers=10)
+        print self.settings.get('websocket_ping_interval', None)
+
+    @property
+    def ping_interval(self):
+        """The interval for websocket keep-alive pings.
+
+        Set websocket_ping_interval = 0 to disable pings.
+        """
+        return 5
+
 
     def check_origin(self, origin):
         return True
@@ -257,6 +287,7 @@ class SocketHandler(websocket.WebSocketHandler):
 app = web.Application([
     (r'/ws', SocketHandler)
 ])
+
 
 
 
