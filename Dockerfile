@@ -34,6 +34,9 @@ RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g gulp bower
 
+# Required by NIST to build Python in our image, needed for their evaluation process
+RUN apt-get install -y build-essential libncursesw5-dev libreadline6-dev libssl-dev libgdbm-dev libc6-dev libsqlite3-dev tk-dev libbz2-dev zlib1g-dev
+
 # Installing python
 RUN apt-get install -y python2.7 python2.7-dev python-pip
 
