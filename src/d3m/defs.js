@@ -290,3 +290,10 @@ d3m.resultsPath = function() {
 d3m.executablesRoot = function() {
   return d3m.config ? d3m.config.configJson['executables_root'] : '';
 };
+
+/**
+ * Opens the D3M instruction PDF in a new tab.
+ */
+d3m.instruction = function() {
+  window.open(visflow.url.D3M_INSTRUCTION);
+};

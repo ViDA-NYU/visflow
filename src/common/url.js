@@ -8,6 +8,8 @@ visflow.url = {};
 /** @const {string} */
 visflow.url.D3M_SOCKET = (window.location.protocol == 'https:' ? 'wss' : 'ws') +
   '://' + window.location.hostname + '/ws';
+/** @const {string} */
+visflow.url.D3M_INSTRUCTION = './d3m-instruction.pdf';
 
 /** @const {string} */
 visflow.url.LIST_DATA = './server/list-data.php';
