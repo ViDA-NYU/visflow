@@ -62,6 +62,12 @@ visflow.d3m.expects_ = {};
 visflow.d3m.pipelines = [];
 
 /**
+ * String shown for "not available".
+ * @const {string}
+ */
+visflow.d3m.NA_STRING = '\0N/A';
+
+/**
  * Sends a message through the D3M socket.
  * @param {d3m.Rpc} fname Function name of the message.
  * @param {*} msg

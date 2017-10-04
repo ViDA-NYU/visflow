@@ -50,44 +50,44 @@ d3m.enumNumberToKey_ = function(enumDict, num, opt_convert) {
 /**
  * Converts a task type string to its enum number.
  * @param {string} taskType
- * @return {?number}
+ * @return {number}
  */
 d3m.taskTypeToNumber = function(taskType) {
   var result = d3m.enumKeyToNumber_(d3m.TaskType, taskType.toLowerCase());
-  return result == null ? null : +result;
+  return result == null ? d3m.TaskType.TASK_TYPE_UNDEFINED : +result;
 };
 
 /**
  * Converts a task subtype string to its enum number.
  * @param {string} taskSubtype
- * @return {?number}
+ * @return {number}
  */
 d3m.taskSubtypeToNumber = function(taskSubtype) {
   var result = d3m.enumKeyToNumber_(d3m.TaskSubtype, taskSubtype.toLowerCase());
-  return result == null ? null : +result;
+  return result == null ? d3m.TaskSubtype.TASK_SUBTYPE_UNDEFINED : +result;
 };
 
 /**
  * Converts a metric to its enum number.
  * @param {string} metric
- * @return {?number}
+ * @return {number}
  */
 d3m.metricToNumber = function(metric) {
   var result = d3m.enumKeyToNumber_(d3m.Metric, metric.toLowerCase(),
     function(key) {
       return key.replace('_', '').toLowerCase();
     });
-  return result == null ? null : + result;
+  return result == null ? d3m.Metric.METRIC_UNDEFINED : + result;
 };
 
 /**
  * Converts an output type to its enum number.
  * @param {string} outputType
- * @return {?number}
+ * @return {number}
  */
 d3m.outputTypeToNumber = function(outputType) {
   var result = d3m.enumKeyToNumber_(d3m.OutputType, outputType);
-  return result == null ? null : +result;
+  return result == null ? d3m.OutputType.OUTPUT_TYPE_UNDEFINED : +result;
 };
 
 /**
