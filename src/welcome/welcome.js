@@ -29,20 +29,18 @@ visflow.welcome.init = function() {
  */
 visflow.welcome.initWelcome_ = function(dialog) {
   dialog.find('#is-mobile').toggle(visflow.isMobile());
+
+  dialog.find('#instruction')
+    .click(d3m.instruction);
+  dialog.find('#start')
+    .click(visflow.user.loginDemo);
+
   dialog.find('#get-started')
-    .click(function() {
-      visflow.documentation();
-    });
+    .click(visflow.documentation);
   dialog.find('#create-account')
-    .click(function() {
-      visflow.user.register();
-    });
+    .click(visflow.user.register);
   dialog.find('#sign-in')
-    .click(function() {
-      visflow.user.login();
-    });
+    .click(visflow.user.login);
   dialog.find('#try-demo')
-    .click(function() {
-      visflow.user.loginDemo();
-    });
+    .click(visflow.user.loginDemo);
 };
