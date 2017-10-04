@@ -157,12 +157,14 @@ visflow.d3m.pipelinesToTable = function() {
     var row = {
       id: pipeline.id,
       status: pipeline.status ?
-        d3m.enumToText(d3m.StatusCode, pipeline.status) : '\0N/A',
+        d3m.enumToText(d3m.StatusCode, pipeline.status) : visflow.d3m.NA_STRING,
       progress: pipeline.progress ?
-        d3m.enumToText(d3m.Progress, pipeline.progress) : '\0N/A'
+        d3m.enumToText(d3m.Progress, pipeline.progress) :
+        d3m.enumToText(d3m.Progress, d3m.Progress.SUBMITTED)
     };
     for (var metric in metrics) {
-      row['score' + metric] = pipelineMetrics[pipeline.id][+metric] || '\0N/A';
+      row['score' + metric] = pipelineMetrics[pipeline.id][+metric] ||
+        visflow.d3m.NA_STRING;
     }
     return row;
   });
