@@ -42,24 +42,19 @@ mysql -u root -p < init-db.sql
 ./init.sh
 ```
 
-You need to configure the web server https for VisFlow. Here is a sample config for Apache:
+You need to configure the web server https for VisFlow. Here is a sample config for Apache.
+Note that the config for D3M is different from the regular VisFlow Apache config,
+because HTTPS is not used.
 ```
-# Must have enabled rewrite_module and headers_module
 <VirtualHost {your_domain}:80>
+  ProxyPass /ws ws://localhost:8888/ws
   <Directory {path_to_visflow}>
-    # Redirect all http requests to https
-    RewriteEngine on
-    RewriteCond %{HTTPS} off
-    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI}
+    DirectoryIndex index.php # Entry point is index.php instead of index.html!
   </Directory>
 </VirtualHost>
-<VirtualHost {your_domain}:443>
-  SSLEngine on
-  SSLCertificateFile {path_to_ssl_cert}
-  SSLCertificateKeyFile {path_to_ssl_key}
-
-  <Directory {path_to_visflow}>
-    DirectoryIndex index.php
-  </Directory>
-</VirtualHost>
+```
+Ensure that required modules are loaded.
+```
+a2enmod proxy
+a2enmod proxy_wstunnel
 ```
