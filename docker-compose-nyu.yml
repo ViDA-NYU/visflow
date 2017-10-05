@@ -21,6 +21,8 @@ services:
    - /config.json
  ta2:
   image: "registry.datadrivendiscovery.org/ta2/nyu_ta2:latest"
+  environment:
+   - CONFIG_JSON_PATH=/config.json
   volumes:
    - ~/seed:/data/d3m
    - d3m_temp_nyu:/data/d3m-tmp
@@ -28,7 +30,7 @@ services:
    - d3m_logs:/data/d3m-logs
   entrypoint:
    - ta2_serve
-   - /config.json
+#   - /config.json
    - '50051'
 volumes:
  data:
