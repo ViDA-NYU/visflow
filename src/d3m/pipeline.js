@@ -31,8 +31,10 @@ visflow.d3m.loadPipelineAsDiagram = function(pipeline) {
       // Create edges.
       pipeline.connections.forEach(function(conn) {
         visflow.flow.createEdge(
-          modules[conn['from_module_id']].getPort(conn['from_output_name']),
-          modules[conn['to_module_id']].getPort(conn['to_input_name'])
+          modules[conn['from_module_id']]
+            .getPort('out_' + conn['from_output_name']),
+          modules[conn['to_module_id']]
+            .getPort('in_' + conn['to_input_name'])
         );
       });
 
@@ -47,16 +49,18 @@ visflow.d3m.loadPipelineAsDiagram = function(pipeline) {
     var ports = {};
     if (module.inputs) {
       module.inputs.forEach(function(input) {
-        ports[input.name] = new visflow.ComputationPort({
-          id: /** @type {string} */(input.name),
+        var name = 'in_' + input.name;
+        ports[name] = new visflow.ComputationPort({
+          id: name,
           isInput: true
         });
       });
     }
     if (module.outputs) {
       module.outputs.forEach(function(output) {
-        ports[output.name] = new visflow.ComputationPort({
-          id: /** @type {string} */(output.name)
+        var name = 'out_' + output.name;
+        ports[name] = new visflow.ComputationPort({
+          id: name
         });
       });
     }
