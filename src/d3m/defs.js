@@ -11,7 +11,7 @@ d3m.DATA_PATH = '/data/d3m';
 d3m.D3M_INDEX = 'd3mIndex';
 
 /** @const {string} */
-d3m.URI_PREFIX = ''; // 'file://';
+d3m.URI_PREFIX = 'file://';
 
 /** @enum {number} */
 d3m.StatusCode = {
