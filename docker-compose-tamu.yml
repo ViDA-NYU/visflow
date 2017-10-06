@@ -31,6 +31,8 @@ services:
    - d3m_logs:/data/d3m-logs
   entrypoint:
    - ta2_serve
+  environment:
+   - CONFIG_JSON_PATH=/config.json
 volumes:
  data:
  mysql:
