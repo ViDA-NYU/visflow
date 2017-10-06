@@ -29,6 +29,8 @@ services:
   entrypoint:
    - ta2_serve
    - /config.json
+  environment:
+   - CONFIG_JSON_PATH=/config.json
 volumes:
  data:
  mysql:
