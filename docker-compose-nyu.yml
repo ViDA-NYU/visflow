@@ -21,6 +21,7 @@ services:
    - /config.json
  ta2:
   image: "registry.datadrivendiscovery.org/ta2/nyu_ta2:latest"
+  restart: on-failure
   environment:
    - CONFIG_JSON_PATH=/config.json
   volumes:
