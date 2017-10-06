@@ -469,6 +469,15 @@ visflow.utils.fileSizeDisplay = function(size) {
 };
 
 /**
+ * Joins the two file paths.
+ * @param {!Array<string>} parts
+ * @return {string}
+ */
+visflow.utils.joinPath = function(parts) {
+  return parts.join('/').replace(/\/+/g, '/');
+};
+
+/**
  * Performs utils initialization.
  */
 visflow.utils.init();

@@ -20,6 +20,8 @@ services:
    - GRPC_PORT=5005 
    - GRPC_HOST=ta2
  ta2:
+  environment:
+   - CONFIG_JSON_PATH=/config.json
   image: "jhfjhfj1/tamuta2:latest"
   volumes:
    - ~/seed:/data/d3m
@@ -28,7 +30,6 @@ services:
    - d3m_logs:/data/d3m-logs
   entrypoint:
    - ta2_serve
-   - /config.json
   environment:
    - CONFIG_JSON_PATH=/config.json
 volumes:

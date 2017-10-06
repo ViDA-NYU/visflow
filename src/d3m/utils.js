@@ -75,7 +75,7 @@ d3m.taskSubtypeToNumber = function(taskSubtype) {
 d3m.metricToNumber = function(metric) {
   var result = d3m.enumKeyToNumber_(d3m.Metric, metric.toLowerCase(),
     function(key) {
-      return key.replace('_', '').toLowerCase();
+      return key.replace(/_/g, '').toLowerCase();
     });
   return result == null ? d3m.Metric.METRIC_UNDEFINED : + result;
 };

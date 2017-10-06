@@ -10,6 +10,9 @@ d3m.DATA_PATH = '/data/d3m';
 /** @const {string} */
 d3m.D3M_INDEX = 'd3mIndex';
 
+/** @const {string} */
+d3m.URI_PREFIX = 'file://';
+
 /** @enum {number} */
 d3m.StatusCode = {
   UNKNOWN: 0,
@@ -52,7 +55,8 @@ d3m.Metric = {
   R_SQUARED: 11,
   NORMALIZED_MUTUAL_INFORMATION: 12,
   JACCARD_SIMILARITY_SCORE: 13,
-  EXECUTION_TIME: 14
+  EXECUTION_TIME: 14,
+  MEAN_SQUARED_ERROR: 15
 };
 
 /**
@@ -266,10 +270,10 @@ d3m.config = null;
  * @return {string}
  */
 d3m.trainingDataRoot = function() {
-  if (d3m.config) {
-    return d3m.config.configJson['training_data_root'];
-  }
-  return d3m.DATA_PATH + '/' + visflow.d3m.problem.id + '/data';
+  return d3m.URI_PREFIX + (d3m.config ?
+    d3m.config.configJson['training_data_root'] :
+    d3m.DATA_PATH + '/' + visflow.d3m.problem.id + '/data'
+  );
 };
 
 /**
@@ -277,10 +281,8 @@ d3m.trainingDataRoot = function() {
  * @return {string}
  */
 d3m.resultsPath = function() {
-  if (d3m.config) {
-    return d3m.config.configJson['results_path'];
-  }
-  return d3m.trainingDataRoot();
+  return d3m.config ? d3m.URI_PREFIX + d3m.config.configJson['results_path'] :
+    d3m.trainingDataRoot();
 };
 
 /**
@@ -288,7 +290,8 @@ d3m.resultsPath = function() {
  * @return {string}
  */
 d3m.executablesRoot = function() {
-  return d3m.config ? d3m.config.configJson['executables_root'] : '';
+  return d3m.URI_PREFIX + (
+    d3m.config ? d3m.config.configJson['executables_root'] : '');
 };
 
 /**

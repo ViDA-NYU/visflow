@@ -23,11 +23,12 @@ services:
   image: "registry.datadrivendiscovery.org/ta2/isi_ta2:latest"
   environment:
    - CONFIG_JSON_PATH=/config.json
-   volumes:
+  volumes:
    - ~/seed:/data/d3m
    - data_tmp:/tmp/dsbox-ta2
    - exec_tmp:/data/d3m-tmp
    - d3m_logs:/data/d3m-logs
+   - ./test_d3m_config.json:/config.json
 volumes:
  data:
  mysql:

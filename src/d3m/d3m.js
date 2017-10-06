@@ -448,7 +448,8 @@ visflow.d3m.exportPipeline = function(pipelineId) {
       'session_id': visflow.d3m.sessionId
     },
     'pipeline_id': pipelineId,
-    'pipeline_exec_uri': d3m.executablesRoot()
+    'pipeline_exec_uri': visflow.utils.joinPath([d3m.executablesRoot(),
+      pipelineId])
   });
 };
 
