@@ -51,16 +51,31 @@ RUN npm install
 ADD bower.json .
 RUN bower --allow-root install
 
+
+#RUN mkdir -p server/GRPC_TA2_TA3
+WORKDIR server/GRPC_TA2_TA3
 # Installing python dependencies
-RUN mkdir -p server/GRPC_TA2_TA3
-ADD server/GRPC_TA2_TA3/requirements.txt server/GRPC_TA2_TA3/
-RUN pip install -r /var/www/html/server/GRPC_TA2_TA3/requirements.txt
+ADD server/GRPC_TA2_TA3/requirements.txt .
+RUN pip install -r requirements.txt
+
+# Installing Node Relay Server dependencies
+# Creating nonroot user (node doesn't install properly with root)
+RUN useradd nonroot -m -s /bin/bash
+ADD server/GRPC_TA2_TA3/package.json .
+RUN cp package.json /home/nonroot
+USER nonroot
+WORKDIR /home/nonroot
+RUN npm install
+USER root
+RUN cp -r /home/nonroot/node_modules /var/www/html/server/GRPC_TA2_TA3/
+
+WORKDIR /var/www/html/
 
 # Copying visflow to apache folder
 ADD . /var/www/html/
 
 # Build visflow
-RUN gulp build && gulp build-doc
+RUN gulp build-dev && gulp build-doc
 
 RUN chmod +x server/init.sh
 

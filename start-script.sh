@@ -21,7 +21,8 @@ fi
 
 # Initializing python relay server
 echo Starting GRPC relay server...
-python2 server/GRPC_TA2_TA3/TA3.py  &
+#python2 server/GRPC_TA2_TA3/TA3.py  &
+node server/GRPC_TA2_TA3/relay.js &
 
 # Initializing Apache
 echo Starting Apache2 server
