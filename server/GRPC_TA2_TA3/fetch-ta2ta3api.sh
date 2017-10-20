@@ -10,10 +10,3 @@ if [ ! -e ta3ta2_api ]; then
   mv ta3ta2-api ta3ta2_api
   rm -rf ta3ta2_api/.git
 fi
-
-./update-api-proto.sh
-
-# echo "Starting server ..."
-# 
-# # this might need to be in the background
-# python TA3.py

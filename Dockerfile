@@ -51,15 +51,9 @@ RUN npm install
 ADD bower.json .
 RUN bower --allow-root install
 
-
-#RUN mkdir -p server/GRPC_TA2_TA3
-WORKDIR server/GRPC_TA2_TA3
-# Installing python dependencies
-ADD server/GRPC_TA2_TA3/requirements.txt .
-RUN pip install -r requirements.txt
-
 # Installing Node Relay Server dependencies
 # Creating nonroot user (node doesn't install properly with root)
+WORKDIR server/GRPC_TA2_TA3
 RUN useradd nonroot -m -s /bin/bash
 ADD server/GRPC_TA2_TA3/package.json .
 RUN cp package.json /home/nonroot
@@ -105,12 +99,3 @@ RUN chmod +x /usr/local/bin/start-script.sh
 
 # Running bash
 CMD ["/bin/bash"]
-
-# RUN: docker network create ta2ta3
-
-# RUN: docker run -ti -p 80:80 -p 8888:8888 -v data:/data/visflow -v mysql:/var/lib/mysql -v data_d3m:/data/d3m -e GRPC_PORT='5005' --name ta3 --net ta2ta3 visflow
-
-# RUN TAMU TA2: docker run -it -p 50051:5005 -v data_d3m:/data/d3m:rw --net ta2ta3 --name ta2 jhfjhfj1/tamuta2:latest
-
-# RUN_OLD: docker run -ti -p 80:80 -p 8888:8888 -v data:/data/visflow -v mysql:/var/lib/mysql -v data_d3m:/data/d3m -e GRPC_PORT='5005' --name ta3 --net ta2ta3 visflow
-

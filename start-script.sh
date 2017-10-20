@@ -19,7 +19,7 @@ if [ ! -f "/data/visflow/INITIALIZED_VOLUME.flag" ]; then
   popd
 fi
 
-# Initializing python relay server
+# Initializing relay server
 echo Starting GRPC relay server...
 #python2 server/GRPC_TA2_TA3/TA3.py  &
 node server/GRPC_TA2_TA3/relay.js &
