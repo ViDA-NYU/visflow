@@ -22,19 +22,6 @@ connections.push( {stub: new core.Core(GRPC_CONN_URL, grpc.credentials.createIns
 connections.push( {stub: new data_ext.DataExt(GRPC_CONN_URL, grpc.credentials.createInsecure()), module: data_ext} );
 connections.push( {stub: new dataflow_ext.DataflowExt(GRPC_CONN_URL, grpc.credentials.createInsecure()), module: dataflow_ext} );
 
-function toObj(message){
-    let ret = {};
-    console.log(message)
-    keys = Object.keys(message);
-    keys.forEach(k => {
-        if (typeof message[k] === "object" && message[k] !== null)
-            ret[k] = toObj(message[k]);
-        else
-            ret[k] = message[k];
-    });
-    return ret;
-}
-
 // Websocket relay server
 wss.on("connection", function(ws) {
     ws.on("message", function(str_message) {
