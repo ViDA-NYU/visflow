@@ -2,7 +2,7 @@ version: '3'
 services:
  ta3:
   build: 
-   context: .
+   context: ../
    dockerfile: Dockerfile
   ports: 
    - '80:80'

@@ -131,3 +131,4 @@ INSERT INTO diagram (user_id, name, file_path) VALUES
   (2, 'network', 'diagrams/demo/network');
 
 INSERT INTO sample_data (data_id) VALUES (1);
+
