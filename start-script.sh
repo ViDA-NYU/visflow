@@ -1,5 +1,7 @@
 #!/bin/bash
-# This is the entry script for the docker container. It is called from ta3_search, and is responsible for initializing apache, mysql and grpc-relay services.
+# This is the entry script for the docker container. It is called from 
+# ta3_search, and is responsible for initializing apache, mysql and 
+# grpc-relay services.
 
 # Setting mysql permissions
 chown -R mysql:mysql /var/lib/mysql

@@ -18,9 +18,18 @@ let dataflow_ext = grpc.load(path.join(__dirname, 'ta3ta2_api', 'dataflow_ext.pr
 
 // Creating the GRPC Connections
 let connections = [];
-connections.push( {stub: new core.Core(GRPC_CONN_URL, grpc.credentials.createInsecure()), module: core} );
-connections.push( {stub: new data_ext.DataExt(GRPC_CONN_URL, grpc.credentials.createInsecure()), module: data_ext} );
-connections.push( {stub: new dataflow_ext.DataflowExt(GRPC_CONN_URL, grpc.credentials.createInsecure()), module: dataflow_ext} );
+connections.push({
+	stub: new core.Core(GRPC_CONN_URL, grpc.credentials.createInsecure()), 
+	module: core
+});
+connections.push({
+	stub: new data_ext.DataExt(GRPC_CONN_URL, grpc.credentials.createInsecure()), 
+	module: data_ext
+});
+connections.push({
+	stub: new dataflow_ext.DataflowExt(GRPC_CONN_URL, grpc.credentials.createInsecure()), 
+	module: dataflow_ext
+});
 
 // Websocket relay server
 wss.on('connection', function(ws) {
@@ -31,13 +40,13 @@ wss.on('connection', function(ws) {
   	let fname = message['fname'];
   	fname = fname[0].toLowerCase() + fname.substr(1);
   	connections.forEach(conn => {
-      if ( fname in conn['stub'] ) {
+      if (fname in conn['stub']) {
         // call method
         let responseClass = conn['module'][conn['stub'][fname].responseType.name];
         if (conn['stub'][fname].responseStream === true){
           // streaming response
           let call = conn['stub'][fname](parameter);
-          call.on('data', function(response){
+          call.on('data', function(response) {
             response = new responseClass(response);
             ws.send(JSON.stringify({'rid':rid, 'object': response}))
           })
@@ -46,10 +55,10 @@ wss.on('connection', function(ws) {
           conn['stub'][fname](parameter, function(err, response){
             if (err) {
               console.log('ERROR: ' + err)
-            } else {
-              response = new responseClass(response);
-              ws.send(JSON.stringify({'rid':rid, 'object': response}))
+              return;
             }
+            response = new responseClass(response);
+            ws.send(JSON.stringify({'rid':rid, 'object': response}))
           });
         }  
       } // if (fname in conn)
