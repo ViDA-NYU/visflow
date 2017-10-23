@@ -1,0 +1,10 @@
+{
+    "dataset_schema": "/data/d3m/o_185/data/dataSchema.json",
+    "problem_schema": "/data/d3m/o_185/problemSchema.json",
+    "training_data_root": "/data/d3m/o_185/data",
+    "pipeline_logs_root": "/data/d3m-logs",
+    "executables_root": "/data/d3m-tmp",
+    "temp_storage_root": "/data/d3m-tmp",
+    "test_data_root": "/data/d3m/o_185/data",
+    "results_path": "/data/d3m-tmp/model_result.csv"
+}

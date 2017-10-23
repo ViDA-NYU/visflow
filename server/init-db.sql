@@ -19,7 +19,7 @@ CREATE TABLE auth (
   user_id INT UNSIGNED NOT NULL,
   session_id CHAR(64) NOT NULL,
   start_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  end_time TIMESTAMP NOT NULL,
+  end_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT FOREIGN KEY (user_id)
     REFERENCES visflow.user (id)
     ON DELETE CASCADE
@@ -131,3 +131,4 @@ INSERT INTO diagram (user_id, name, file_path) VALUES
   (2, 'network', 'diagrams/demo/network');
 
 INSERT INTO sample_data (data_id) VALUES (1);
+
