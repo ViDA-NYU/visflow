@@ -1,0 +1,19 @@
+@import 'src/common/common';
+
+.visflow .node.module {
+  &.details {
+    height: 60px;
+    width: 120px;
+  }
+
+  &.minimized {
+    height: 30px;
+    width: 60px;
+  }
+
+  .content > div {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

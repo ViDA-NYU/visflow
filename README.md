@@ -41,3 +41,20 @@ mysql -u root -p < init-db.sql
 # Create data and diagrams folders and copy demo data and diagrams in place.
 ./init.sh
 ```
+
+You need to configure the web server https for VisFlow. Here is a sample config for Apache.
+Note that the config for D3M is different from the regular VisFlow Apache config,
+because HTTPS is not used.
+```
+<VirtualHost {your_domain}:80>
+  ProxyPass /ws ws://localhost:8888/ws
+  <Directory {path_to_visflow}>
+    DirectoryIndex index.php # Entry point is index.php instead of index.html!
+  </Directory>
+</VirtualHost>
+```
+Ensure that required modules are loaded.
+```
+a2enmod proxy
+a2enmod proxy_wstunnel
+```

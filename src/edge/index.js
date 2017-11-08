@@ -288,6 +288,10 @@ visflow.Edge.prototype.initContextMenu = function() {
     items: this.contextMenuItems()
   });
 
-  $(contextMenu)
-    .on('vf.delete', this.delete.bind(this));
+  visflow.listen(contextMenu, visflow.Event.BEFORE_OPEN,
+    function(event, menuContainer) {
+      var del = menuContainer.find('#' + visflow.Event.DELETE);
+      del.toggleClass('disabled', !visflow.options.isDiagramEditable());
+    });
+  visflow.listen(contextMenu, visflow.Event.DELETE, this.delete.bind(this));
 };

@@ -1,0 +1,53 @@
+@import 'src/common/common';
+
+#pipeline-panel {
+  height: 150px;
+  left: 100px;
+  padding: $padding;
+  position: relative;
+  top: 60px;
+  width: calc(100% - 100px * 2);
+  z-index: 101;
+
+  .header {
+    height: 28px;
+
+    > label {
+      border: 1px solid $gray-a;
+      border-radius: $border-radius;
+      color: $gray-5;
+      margin-right: .3em;
+      padding: 0 $padding-large;
+    }
+
+    > button.float-right {
+      float: right;
+
+      > i {
+        left: -1px;
+        top: 3px;
+      }
+    }
+
+    #pipeline.dropdown-menu {
+      left: calc(100% - 167px);
+      top: 30px;
+    }
+  }
+
+  .content {
+    @include ui-border;
+
+    background-color: $ui-background;
+    padding: $padding;
+
+    .table-container {
+      background: $white;
+      padding: $padding;
+
+      td {
+        padding: $padding;
+      }
+    }
+  }
+}

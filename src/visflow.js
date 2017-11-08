@@ -21,10 +21,14 @@ visflow.init = function() {
   visflow.nodePanel.init();
   visflow.popupPanel.init();
   visflow.toolPanel.init();
+  visflow.pipelinePanel.init();
   visflow.interaction.init();
   // visflow.nlp.init();
 
   visflow.user.init();
+  visflow.d3m.init();
+
+  visflow.options.toggleD3MPipeline(true);
 };
 
 /**

@@ -2,3 +2,6 @@ base_path = /data/visflow/
 data_path = data/
 diagram_path = diagrams/
 nlp_path = nlp/
+d3m_data_path = /data/d3m/
+d3m_config = /data/d3m-config.json
+pid_path = /data/visflow.pid

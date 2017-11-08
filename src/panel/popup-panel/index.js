@@ -57,19 +57,16 @@ visflow.popupPanel.hide = function() {
  * @param {boolean=} opt_compact
  */
 visflow.popupPanel.show = function(opt_event, opt_compact) {
+  if (!visflow.options.isDiagramEditable()) {
+    return;
+  }
   var event = opt_event != null ? opt_event : {
     pageX: visflow.interaction.mouseX,
     pageY: visflow.interaction.mouseY
   };
   var compact = opt_compact != null ? opt_compact : true;
-
   var container = visflow.popupPanel.container_;
-
-  if (compact) {
-    container.addClass('compact');
-  } else {
-    container.removeClass('compact');
-  }
+  container.toggleClass('compact', compact);
 
   var template = compact ? visflow.popupPanel.COMPACT_TEMPLATE_ :
       visflow.popupPanel.TEMPLATE_;

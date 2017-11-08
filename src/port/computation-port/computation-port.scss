@@ -1,3 +1,15 @@
-.visflow .port-icon.computation {
-  background-image: url('./imgs/port-computation.png');
+@import 'src/common/colors';
+
+.visflow .port.computation {
+  > .port-icon {
+    background-image: url('./imgs/port-computation.png');
+  }
+
+  > .background {
+    background-color: $gray-d;
+  }
+
+  &.subsetizable > .background {
+    background-color: $white;
+  }
 }

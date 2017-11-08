@@ -9,12 +9,6 @@
  */
 visflow.Flow = function() {
   /**
-   * Visualization mode on/off.
-   * @type {boolean}
-   */
-  this.visMode = false;
-
-  /**
    * De-serialization flag. Propagation and panel show are disabled during
    * de-serialization.
    * @type {boolean}
@@ -75,18 +69,33 @@ visflow.Flow.NEARBY_THRESHOLD_ = 200;
  * Initializes flow manager.
  */
 visflow.Flow.prototype.init = function() {
-  this.resetFlow();
+  this.resetFlow_();
 
   // TODO(bowen): check that data sources update their data list on-the-fly
   //$(visflow.upload).on('vf.uploaded', this.updateDataSources_);
+
+  visflow.listen(visflow.options, visflow.Event.VISMODE,
+    function(event, state) {
+      if (state) {
+        this.turnOnVisMode();
+      } else {
+        this.turnOffVisMode();
+      }
+    }.bind(this));
 };
 
 /**
  * Resets the loaded flow.
+ * @private
  */
-visflow.Flow.prototype.resetFlow = function() {
+visflow.Flow.prototype.resetFlow_ = function() {
+  if (this.force) {
+    this.force.stop();
+  }
+  this.stopNodeTransitions();
+
   // Clear visMode.
-  this.visMode = false;
+  visflow.options.toggleVisMode(false);
   visflow.signal(visflow.flow, visflow.Event.VISMODE);
 
   // counters start from 1
@@ -107,18 +116,30 @@ visflow.Flow.prototype.resetFlow = function() {
   this.edgeSelected = null;
 };
 
-
 /**
  * Creates a node of given type.
  * @param {string} type
- * @param {Object=} save Saved node data for de-serialization.
+ * @param {{
+ *   id: (string|undefined),
+ *   save: (!Object|undefined),
+ *   onReady: (Function|undefined),
+ *   ports: (!Object|undefined)
+ * }=} opt_params
+ *   save: Saved node data for de-serialization.
+ *   onReady: Callback on node creation.
+ *   ports: Port specifications for the node.
  * @return {visflow.Node}
  */
-visflow.Flow.prototype.createNode = function(type, save) {
+visflow.Flow.prototype.createNode = function(type, opt_params) {
+  var params = opt_params || {};
+  var save = params.save;
+  var onReady = params.onReady;
+  var ports = params.ports;
+
   // Convert to camel case. HTML use dash separated strings.
   type = $.camelCase(type);
 
-  var params = {};
+  var nodeParams = {};
 
   var obsoleteTypes = visflow.Flow.obsoleteTypes();
   // Convert old types to new ones.
@@ -134,12 +155,13 @@ visflow.Flow.prototype.createNode = function(type, save) {
   }
   var nodeConstructor = constructors[type];
 
-  _.extend(params, {
-    id: ++this.nodeCounter_,
+  _.extend(nodeParams, {
+    id: params.id || ++this.nodeCounter_,
     type: type,
-    container: visflow.viewManager.createNodeContainer()
+    container: visflow.viewManager.createNodeContainer(),
+    ports: ports
   });
-  var newNode = new nodeConstructor(params);
+  var newNode = new nodeConstructor(nodeParams);
   visflow.listen(newNode, visflow.Event.READY, function() {
     if (save) {
       // If node is created from diagram loading, then de-serialize.
@@ -157,6 +179,10 @@ visflow.Flow.prototype.createNode = function(type, save) {
       // Node size might be de-serialized from save and a resize event must be
       // explicitly fired in order to re-draw correctly.
       this.resize();
+    }
+
+    if (onReady) {
+      onReady();
     }
   }.bind(newNode));
 
@@ -305,44 +331,34 @@ visflow.Flow.prototype.propagate = function(startNode) {
 
   var topo = []; // visited node list, in reversed topological order
   var visited = {};
-  /**
-   * Traverses the node and its successors (downflow nodes). Starting from a
-   * given node.
-   * @param {!visflow.Node|!Array<!visflow.Node>} node
-   */
-  var traverse = function(node) {
-    if (visited[node.id]) {
-      return;
-    }
-    visited[node.id] = true;
-    node.outputTargetNodes().forEach(function(node) {
-      traverse(node);
-    });
-    topo.push(node);
-  };
 
   // Traverse startNode(s) to get all nodes touched by propagation.
   visflow.progress.start('propagating', true);
   if (visflow.Node.prototype.isPrototypeOf(startNode)) {
     startNode.isPropagationSource = true;
-    traverse(startNode);
+    visflow.utils.traverse(/** @type {!visflow.Node} */(startNode), visited,
+      topo);
   } else if (startNode instanceof Array) {
     startNode.forEach(function(node) {
       node.isPropagationSource = true;
-      traverse(node);
+      visflow.utils.traverse(node, visited, topo);
     });
   }
   visflow.progress.setPercentage(visflow.Flow.PROPAGATION_PROGRESS_BASE);
+
+  // Corner case: diagram has no propagation sources.
+  if (!topo.length) {
+    visflow.progress.end();
+  }
 
   var processedNodes = {};
   var processedCounter = 0;
   /**
    * Handles the completion of a node's process().
    * @param {!jQuery.Event} event
-   * @param {{node: !visflow.Node}} data
+   * @param {!visflow.Node} node
    */
-  var nodeProcessed = function(event, data) {
-    var node = data.node;
+  var nodeProcessed = function(event, node) {
     console.log('processed', node.type);
     var percent = ++processedCounter / topo.length;
     visflow.progress.setPercentage(percent *
@@ -371,8 +387,6 @@ visflow.Flow.prototype.propagate = function(startNode) {
     var targetNodes = node.outputTargetNodes();
     targetNodes.forEach(function(targetNode) {
       dependencyCount[targetNode.id]--;
-      //console.log(targetNode.id, targetNode.type,
-      //  dependencyCount[targetNode.id]);
 
       if (dependencyCount[targetNode.id] < 0) {
         visflow.error('dependency count', dependencyCount[targetNode.id],
@@ -380,7 +394,7 @@ visflow.Flow.prototype.propagate = function(startNode) {
       }
 
       if (dependencyCount[targetNode.id] == 0) {
-        console.log('listen', targetNode.type);
+        //console.log('listen', targetNode.type);
         visflow.listen(targetNode, visflow.Event.PROCESSED, nodeProcessed);
 
         // Calling node's process(), this will also show it.
@@ -477,7 +491,7 @@ visflow.Flow.prototype.deserializeFlow = function(flowObject) {
   flowObject.nodes.forEach(function(nodeSaved) {
     var type = visflow.Flow.standardizeNodeType(nodeSaved.type);
     loadCount++;
-    var newNode = this.createNode(type, nodeSaved);
+    var newNode = this.createNode(type, {save: nodeSaved});
     visflow.listen(newNode, visflow.Event.READY, function() {
       loadCount--;
       if (loadCount == 0) {
@@ -524,31 +538,30 @@ visflow.Flow.prototype.deserializeFlowEdges_ = function(flow, hashes) {
   this.propagate(this.dataSources());
 };
 
-/**
- * Toggles the VisMode.
- */
-visflow.Flow.prototype.toggleVisMode = function() {
-  // We must call node.animateToVisModeOn/Off before inverting the Flow.visMode
-  // flag because nodes use this flag to determine to which css to save their
-  // current state.
-  if (!this.visMode) {
-    // Turn visMode on.
-    _.each(this.nodes, function(node) {
-      node.animateToVisModeOn();
-    });
-    $(visflow.const.EDGE_CONTAINER_SELECTOR).css('opacity', 0);
-  } else {
-    // Turn visMode off.
-    _.each(this.nodes, function(node) {
-      node.animateToVisModeOff();
-    });
-    setTimeout(function() {
-      $(visflow.const.EDGE_CONTAINER_SELECTOR).css('opacity', 1);
-    }, visflow.const.VISMODE_TRANSITION_DURATION);
-  }
 
-  this.visMode = !this.visMode;
-  visflow.signal(visflow.flow, visflow.Event.VISMODE);
+/**
+ * Turns on VisMode.
+ */
+visflow.Flow.prototype.turnOnVisMode = function() {
+  _.each(this.nodes, function(node) {
+    node.animateToVisModeOn();
+  });
+  $(visflow.const.EDGE_CONTAINER_SELECTOR).css('opacity', 0);
+};
+
+/**
+ * Turns off VisMode.
+ * We must call node.animateToVisModeOn/Off before inverting the Flow.visMode
+ * flag because nodes use this flag to determine to which css to save their
+ * current state.
+ */
+visflow.Flow.prototype.turnOffVisMode = function() {
+  _.each(this.nodes, function(node) {
+    node.animateToVisModeOff();
+  });
+  setTimeout(function() {
+    $(visflow.const.EDGE_CONTAINER_SELECTOR).css('opacity', 1);
+  }, visflow.const.VISMODE_TRANSITION_DURATION);
 };
 
 /**
@@ -557,7 +570,7 @@ visflow.Flow.prototype.toggleVisMode = function() {
 visflow.Flow.prototype.clearFlow = function() {
   // clear screen
   visflow.viewManager.clearFlowViews();
-  this.resetFlow();
+  this.resetFlow_();
   visflow.optionPanel.close();
 };
 
@@ -659,7 +672,7 @@ visflow.Flow.prototype.addNodeHover = function(nodes) {
   }
   for (var i in toAdd) {
     var node = toAdd[i];
-    node.container.addClass('hover');
+    node.getContainer().addClass('hover');
     this.nodesHovered[node.id] = node;
   }
 };
@@ -752,6 +765,14 @@ visflow.Flow.prototype.isNodeSelected = function(node) {
  */
 visflow.Flow.prototype.keyAction = function(key, event) {
   switch (key) {
+    case 'ctrl+N':
+      visflow.d3m.newTask();
+      event.preventDefault();
+      break;
+    case 'ctrl+G':
+      visflow.d3m.newTaskFromConfig();
+      event.preventDefault();
+      break;
     case 'ctrl+E':
       visflow.diagram.new();
       event.preventDefault();
@@ -950,6 +971,25 @@ visflow.Flow.prototype.iterateActiveness = function() {
     var node = this.nodes[id];
     node.activeness /= 2.0; // exponentially decrease activeness
   }
+};
+
+/**
+ * Stops all transitions on the node.
+ */
+visflow.Flow.prototype.stopNodeTransitions = function() {
+  _.each(this.nodes, function(node) {
+    node.getContainer().stop(true);
+  });
+};
+
+/**
+ * Gets the node with given id.
+ * @param {string} id
+ * @return {!visflow.Node}
+ */
+visflow.Flow.prototype.getNode = function(id) {
+  visflow.assert(id in this.nodes, 'node id ' + id + ' not found');
+  return this.nodes[id];
 };
 
 /**

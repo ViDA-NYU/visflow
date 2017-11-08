@@ -37,7 +37,7 @@ visflow.Flow.nodeConstructors = function() {
     map: visflow.Map,
 
     // Computation nodes
-    identity: visflow.Identity
+    module: visflow.Module
   };
 };
 

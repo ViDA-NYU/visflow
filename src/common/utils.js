@@ -422,6 +422,62 @@ visflow.utils.formatTime = function(value) {
 };
 
 /**
+ * Uppercases the first letter of the string.
+ * @param {string} str
+ * @return {string}
+ */
+visflow.utils.uppercaseFirstLetter = function(str) {
+  if (!str.length) {
+    return str;
+  }
+  return str[0].toUpperCase() + str.substr(1);
+};
+
+/**
+ * Traverses the node and its successors (downflow nodes). Starting from a
+ * given node. The reversed topological order is written to "order". "visited"
+ * marks the id's of visited nodes.
+ * @param {!visflow.Node} node
+ * @param {!Object<boolean>} visited
+ * @param {!Array<visflow.Node>} order
+ */
+visflow.utils.traverse = function(node, visited, order) {
+  if (visited[node.id]) {
+    return;
+  }
+  visited[node.id] = true;
+  node.outputTargetNodes().forEach(function(node) {
+    visflow.utils.traverse(node, visited, order);
+  });
+  order.push(node);
+};
+
+/**
+ * Converts file size (bytes) to human readable format.
+ * @param {number} size
+ * @return {string}
+ */
+visflow.utils.fileSizeDisplay = function(size) {
+  var base = 1000;
+  if (size < base) {
+    return size + 'B';
+  } else if (size < base * base) {
+    return (size / base).toFixed(2) + 'KB';
+  } else {
+    return (size / base / base).toFixed(2) + 'MB';
+  }
+};
+
+/**
+ * Joins the two file paths.
+ * @param {!Array<string>} parts
+ * @return {string}
+ */
+visflow.utils.joinPath = function(parts) {
+  return parts.join('/').replace(/\/+/g, '/');
+};
+
+/**
  * Performs utils initialization.
  */
 visflow.utils.init();

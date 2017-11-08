@@ -1,0 +1,44 @@
+version: '3'
+services:
+ ta3:
+  build: 
+   context: ../
+   dockerfile: Dockerfile
+  ports: 
+   - '80:80'
+   - '8888:8888'
+  volumes:
+   - data:/data/visflow
+   - mysql:/var/lib/mysql
+   - ~/seed:/data/d3m
+   - d3m_temp:/data/d3m-tmp
+   - ./test_d3m_config.json:/config.json
+  entrypoint:
+   - ta3_search
+   - /config.json
+  environment:
+   - GRPC_PORT=5005 
+   - GRPC_HOST=ta2
+ ta2:
+  environment:
+   - CONFIG_JSON_PATH=/config.json
+  image: "jhfjhfj1/tamuta2:latest"
+  restart: on-failure
+  volumes:
+   - ~/seed:/data/d3m
+   - ./test_d3m_config.json:/config.json
+   - d3m_temp:/data/d3m-tmp
+   - d3m_logs:/data/d3m-logs
+  entrypoint:
+   - ta2_serve
+  environment:
+   - CONFIG_JSON_PATH=/config.json
+volumes:
+ data:
+ mysql:
+ d3m_temp:
+ d3m_logs:
+
+# RUN: docker network create ta2ta3 (not necessary in docker_compose)
+# RUN TAMU TA2: docker run -it -p 50051:5005 -v data_d3m:/data/d3m:rw --net ta2ta3 --name ta2 jhfjhfj1/tamuta2:latest
+# RUN: docker run -ti -p 80:80 -p 8888:8888 -v data:/data/visflow -v mysql:/var/lib/mysql -v data_d3m:/data/d3m -e GRPC_PORT='5005' --name ta3 --net ta2ta3 visflow

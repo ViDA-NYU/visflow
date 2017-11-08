@@ -52,7 +52,7 @@ visflow.SubsetPort.prototype.onConnected = function(edge) {
 visflow.SubsetPort.prototype.initContextMenu = function() {
   var contextMenu = visflow.SubsetPort.base.initContextMenu.call(this);
 
-  $(contextMenu).on('vf.export', function() {
+  visflow.listen(contextMenu, visflow.Event.EXPORT, function() {
     visflow.upload.export(this.pack);
   }.bind(this));
 
@@ -91,8 +91,9 @@ visflow.SubsetPort.prototype.interaction = function() {
   this.container
     .dblclick(function() {
       this.info();
-      // For debugging.
-      console.log(this.pack, this);
+      // DEBUG(bowen)
+      visflow.debug = this.node;
+      console.log('[port]', this.pack, this);
     }.bind(this));
 };
 
